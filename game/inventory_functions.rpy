@@ -109,7 +109,7 @@ init -5 python:
 
         # Set packaged flag when all drag steps done
         if new_idx >= total_drag_steps:
-            evidence_found[testing_item + "_packaged"] = True
+            evidence_found[testing_item + "_processed"] = True
 
         store.selected_tool = None
         renpy.restart_interaction()

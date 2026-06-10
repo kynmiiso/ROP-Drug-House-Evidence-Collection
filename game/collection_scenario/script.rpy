@@ -14,16 +14,20 @@ init python:
     tools = load_items("jsons/toolbox.json")
     for tool in tools.values():
         toolbox.add_to_inventory(tool)
+        
 
     evidence_found = {
         "firearm":             False,
         "firearm_fingerprint": False,
         "mdma_presumptive":    False,
         "mdma_packaged":       False,
+        "mdma_processed":      False,
         "meth_presumptive":    False,
         "meth_packaged":       False,
+        "meth_processed":      False,
         "cocaine_presumptive": False,
         "cocaine_packaged":    False,
+        "cocaine_processed":   False,   # all the drag and drop steps are done, awaiting collect click
     }
 
     # Step definitions 
@@ -172,17 +176,18 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
-    # elif evidence_found["cocaine_packaged"] and "cocaine" not in collected_evidence_inventory:
-    #     imagebutton:
-    #         xpos 0.15 ypos 0.70
-    #         idle "casefile_evidence_idle"
-    #         hover "casefile_evidence_hover"
-    #         action [
-    #             Function(evidence.add_to_inventory, evids["Cocaine Sample"]),
-    #             SetDict(evidence_found, "cocaine_packaged", True),
-    #             Show("inventory"),
-    #             Notify("Evidence added to inventory"),
-    #         ]
+    elif evidence_found["cocaine_processed"] and "cocaine" not in collected_evidence_inventory:
+        imagebutton:
+            xpos 0.15 ypos 0.70
+            idle "casefile_evidence_idle"
+            hover "casefile_evidence_hover"
+            action [
+                Function(evidence.add_to_inventory, evids.get("Cocaine Sample")),
+                Function(collected_evidence_inventory.append, "cocaine"),
+                SetDict(evidence_found, "cocaine_packaged", True),
+                Show("inventory"),
+                Notify("Evidence added to inventory"),
+            ]
 
     if not evidence_found["mdma_packaged"]:
         imagebutton:
@@ -197,17 +202,18 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
-    # elif evidence_found["mdma_packaged"] and "mdma" not in collected_evidence_inventory:
-    #     imagebutton:
-    #         xpos 0.15 ypos 0.70
-    #         idle "casefile_evidence_idle"
-    #         hover "casefile_evidence_hover"
-    #         action [
-    #             Function(evidence.add_to_inventory, evids["MDMA Sample"]),
-    #             SetDict(evidence_found, "mdma_packaged", True),
-    #             Show("inventory"),
-    #             Notify("Evidence added to inventory"),
-    #         ]
+    elif evidence_found["mdma_processed"] and "mdma" not in collected_evidence_inventory:
+        imagebutton:
+            xpos 0.50 ypos 0.65
+            idle "casefile_evidence_idle"
+            hover "casefile_evidence_hover"
+            action [
+                Function(evidence.add_to_inventory, evids.get("MDMA Sample")),
+                Function(collected_evidence_inventory.append, "mdma"),
+                SetDict(evidence_found, "mdma_packaged", True),
+                Show("inventory"),
+                Notify("Evidence added to inventory"),
+            ]
 
     if not evidence_found["meth_packaged"]:
         imagebutton:
@@ -222,23 +228,24 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
-    # elif evidence_found["meth_packaged"] and "meth" not in collected_evidence_inventory:
-    #     imagebutton:
-    #         xpos 0.15 ypos 0.70
-    #         idle "casefile_evidence_idle"
-    #         hover "casefile_evidence_hover"
-    #         action [
-    #             Function(evidence.add_to_inventory, evids["Meth Sample"]),
-    #             SetDict(evidence_found, "meth_packaged", True),
-    #             Show("inventory"),
-    #             Notify("Evidence added to inventory"),
-    #         ]
+    elif evidence_found["meth_processed"] and "meth" not in collected_evidence_inventory:
+        imagebutton:
+            xpos 0.30 ypos 0.80
+            idle "casefile_evidence_idle"
+            hover "casefile_evidence_hover"
+            action [
+                Function(evidence.add_to_inventory, evids.get("Meth Sample")),
+                Function(collected_evidence_inventory.append, "meth"),
+                SetDict(evidence_found, "meth_packaged", True),
+                Show("inventory"),
+                Notify("Evidence added to inventory"),
+            ]
 
     if (evidence_found["cocaine_packaged"]
             and evidence_found["mdma_packaged"]
             and evidence_found["meth_packaged"]):
         textbutton "Finish Investigation":
-            xpos 0.02  ypos 0.88
+            xpos 0.9  ypos 0.9
             style "hud_button"
             action Jump("investigation_complete")
 
@@ -267,7 +274,7 @@ label inspect_evidence:
 
     label evidence_wait_step:
         # All drag steps done for this item?
-        if evidence_found[testing_item + "_packaged"]:
+        if evidence_found[testing_item + "_processed"]:
             jump evidence_done
 
         # Check if a quiz is pending before the next drag step
@@ -314,7 +321,6 @@ label inspect_evidence:
         hide screen colour_chart
         hide screen reagent_result
         hide screen Inventory
-        $ evidence.add_to_inventory(testing_item)
         $ evidence_found[testing_item + "_packaged"] = True
         $ testing_item = None
         $ selected_tool = None
