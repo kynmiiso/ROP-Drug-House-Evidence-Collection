@@ -1,0 +1,22 @@
+[
+    {
+        "key": "cocaine",
+        "name": "Cocaine Sample",
+        "image_name": "inventory-cocaine"
+    },
+    {
+        "key": "mdma",
+        "name": "MDMA Sample",
+        "image_name": "inventory-mdma"
+    },
+    {
+        "key": "meth",
+        "name": "Meth Sample",
+        "image_name": "inventory-meth"
+    },
+    {
+        "key": "fingerprint",
+        "name": "Fingerprint",
+        "image_name": "inventory-fingerprint"
+    }
+]
