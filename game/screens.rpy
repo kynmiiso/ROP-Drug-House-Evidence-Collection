@@ -4,7 +4,6 @@
 
 init offset = -1
 
-
 ################################################################################
 ## Styles
 ################################################################################
@@ -23,7 +22,6 @@ style hyperlink_text:
 
 style gui_text:
     properties gui.text_properties("interface")
-
 
 style button:
     properties gui.button_properties("button")
@@ -1727,17 +1725,4 @@ screen drug_collection_screen():
             SetVariable("collect_step_flag", True),
             Return()
         ]
-
-init python:
-    def collect_current_evidence():
-        global testing_item
-
-        if testing_item is None:
-            return
-
-        testing_item = None
-        selected_tool = None
-        collect_step_flag = False
-        quiz_pending = False
-
-        renpy.jump("evidence_done")
+        

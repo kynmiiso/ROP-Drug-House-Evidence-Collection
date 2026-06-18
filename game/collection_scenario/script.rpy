@@ -34,24 +34,27 @@ init python:
     # collect_step is a marker that shows the bagged evidence
     valid_evidence_steps = {
         "cocaine": [
-            {"cocaine_idle":    "scott_reagent_idle"},
+            {"cocaine_idle":            "tube_idle"},
+            {"cocaine_tube":            "cobalt_thiocynate_idle"},
+            {"cocaine_blue":            "hydrochloric_acid_idle"},
+            {"cocaine_pink":            "chloroform_idle"}, 
+            {"cocaine_blue_pink":       "evidence_bag_idle"},
             "quiz",
-            {"cocaine_blue":    "evidence_bag_idle"},
-            {"evidence_bag_idle":    "tamper_evident_tape_idle"},
+            {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
         "mdma": [
-            {"mdma_idle":       "marquis_reagent_idle"},
+            {"mdma_idle":               "marquis_reagent_idle"},
             "quiz",
-            {"mdma_purple":     "evidence_bag_idle"},
-            {"evidence_bag_idle":    "tamper_evident_tape_idle"},
+            {"mdma_purple":             "evidence_bag_idle"},
+            {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
         "meth": [
-            {"meth_idle":       "marquis_reagent_idle"},
+            {"meth_idle":               "marquis_reagent_idle"},
             "quiz",
-            {"meth_brown":      "evidence_bag_idle"},
-            {"evidence_bag_idle":    "tamper_evident_tape_idle"},
+            {"meth_brown":              "evidence_bag_idle"},
+            {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
     }
@@ -97,6 +100,9 @@ default evidence_inventory = {}
 # Returns the step dict, or None if all steps done or quiz is next
 # ---------------------------------------------------------------------------
 init python:
+    def _total_drag_steps(item):
+        return sum(1 for s in valid_evidence_steps.get(item, []) if isinstance(s, dict))
+
     def _current_drop_image():
         """Return the drop target image for the current drag step."""
         if testing_item is None:
@@ -196,7 +202,7 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
-    elif evidence_found["cocaine_processed"] and not evidence_found["cocaine_packaged"]:
+    elif evidence_found["cocaine_packaged"]:
         add "marker_1" at Transform(zoom=0.5, xpos=0.15, ypos=0.70)
     
     if not evidence_found["mdma_processed"] and not evidence_found["mdma_packaged"]:
@@ -212,7 +218,7 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
-    elif evidence_found["mdma_processed"] and not evidence_found["mdma_packaged"]:
+    elif evidence_found["mdma_packaged"]:
         add "marker_3" at Transform(zoom=0.5, xpos=0.50, ypos=0.65)
 
     if not evidence_found["meth_processed"] and not evidence_found["meth_packaged"]:
@@ -228,12 +234,12 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
-    elif evidence_found["meth_processed"] and not evidence_found["meth_packaged"]:
+    elif evidence_found["meth_packaged"]:
         add "marker_2" at Transform(zoom=0.5, xpos=0.30, ypos=0.80)
 
     if (evidence_found["cocaine_packaged"]
-            and evidence_found["mdma_packaged"]
-            and evidence_found["meth_packaged"]):
+        and evidence_found["mdma_packaged"]
+        and evidence_found["meth_packaged"]):
         textbutton "Finish Investigation":
             xpos 0.75  ypos 0.9
             style "hud_button"
@@ -266,29 +272,28 @@ label inspect_evidence:
     show screen inventory
 
     label evidence_wait_step:
-        # All drag steps done for this item?
         if evidence_found[testing_item + "_processed"]:
             jump evidence_done
 
-        # Check if a quiz is pending before the next drag step
         if quiz_pending:
             jump evidence_quiz
 
-        if evidence_step_index[testing_item] >= 3:
+        if evidence_step_index[testing_item] >= _total_drag_steps(testing_item):
             jump collect_step
-            
-        # Show the drag screen for the current step
+
         $ drop_img = _current_drop_image()
         $ xp, yp  = evidence_positions[testing_item]
         show screen drug_processing_screen(drop_img, xp, yp)
         $ renpy.pause(0.3)
         jump evidence_wait_step
-
+        
     label collect_step:
         hide screen drug_processing_screen
         show screen drug_collection_screen
         "Click to collect and package the evidence."
         $ evidence_found[testing_item + "_processed"] = True
+        $ evidence_found[testing_item + "_packaged"] = True
+        $ evidence.add_to_inventory(evids_by_key[testing_item])
         $ renpy.restart_interaction()
         jump evidence_done
 
@@ -301,7 +306,7 @@ label inspect_evidence:
 
         menu:
             "[_q['correct']]":
-                $ store.quiz_pending = False
+                $ quiz_pending = False
                 hide screen colour_chart
                 hide screen reagent_result
                 "[_q['correct_msg']]"
@@ -331,7 +336,6 @@ label inspect_evidence:
         hide screen reagent_result
         hide screen Inventory
         
-        $ evidence.add_to_inventory(evids_by_key[testing_item])
         $ testing_item = None
         $ selected_tool = None
         $ collect_step_flag = False
@@ -347,7 +351,7 @@ label inspect_evidence:
 # ---------------------------------------------------------------------------
 label scene_room_loop:
     show screen investigation_buttons
-    pause 0.5
+    pause
     jump scene_room_loop
 
 # ---------------------------------------------------------------------------
@@ -394,4 +398,35 @@ label investigation_complete:
     n "We will send this over to the lab for further analysis, in order to fully determine whether your presumptive field tests were correct."
     show nina thinknote1
     n "For now, give yourself a pat on the back!"
+
+    # reset the backend so the scene can be played again when player clicks start game for a second time (or more)
+    $ testing_item = None
+    $ selected_tool = None
+    $ collect_step_flag = False
+    $ quiz_pending = False
+
+    $ evidence_found = {
+        "firearm":             False,
+        "firearm_fingerprint": False,
+        "mdma_presumptive":    False,
+        "mdma_packaged":       False,
+        "mdma_processed":      False,
+        "meth_presumptive":    False,
+        "meth_packaged":       False,
+        "meth_processed":      False,
+        "cocaine_presumptive": False,
+        "cocaine_packaged":    False,
+        "cocaine_processed":   False,
+    }
+
+    $ evidence_step_index = {"cocaine": 0, "mdma": 0, "meth": 0}
+
+    $ cocaine_id_confirmed = False
+    $ mdma_id_confirmed    = False
+    $ meth_id_confirmed    = False
+
+    $ evidence.reset_inventory()
+    $ collected_evidence_inventory = []
+    $ evidence_inventory = {}
+
     return

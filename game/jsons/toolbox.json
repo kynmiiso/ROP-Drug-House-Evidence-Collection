@@ -6,16 +6,28 @@
         "action": "use_marquis_reagent"
     },
     {
-        "name": "Scott Reagent",
-        "image_name": "toolbox-scott_reagent", 
+        "name": "Cobalt Thiocynate",
+        "image_name": "cobalt_thiocynate_idle", 
         "usable": true, 
-        "action": "use_scott_reagent"
+        "action": "use_cobalt_thiocynate"
     },
     {
-        "name": "Backing Card",
-        "image_name": "toolbox-backing_card",
-        "usable": true,
-        "action": "use_backing_card"
+        "name": "Hydrochloric Acid",
+        "image_name": "hydrochloric_acid_idle", 
+        "usable": true, 
+        "action": "use_hydrochloric_acid"
+    },
+    {
+        "name": "Chloroform",
+        "image_name": "chloroform_idle", 
+        "usable": true, 
+        "action": "use_chloroform"
+    },
+    {
+        "name": "Tube",
+        "image_name": "tube_idle", 
+        "usable": true, 
+        "action": "use_tube"
     },
     {
         "name": "Evidence Bag",
@@ -30,16 +42,16 @@
         "action": "use_tamper_evident_tape"
     },
     {
+        "name": "Backing Card",
+        "image_name": "toolbox-backing_card",
+        "usable": true,
+        "action": "use_backing_card"
+    },
+    {
         "name": "Tape",
         "image_name": "toolbox-tape", 
         "usable": true, 
         "action": "use_tape"
-    },
-    {
-        "name": "Tube",
-        "image_name": "toolbox-tube", 
-        "usable": true, 
-        "action": "use_tube"
     },
     {
         "name": "UV Light",
