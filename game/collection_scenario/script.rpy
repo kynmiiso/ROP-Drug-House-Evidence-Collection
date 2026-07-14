@@ -39,7 +39,7 @@ default evidence_found = {
         "meth_processed":               False,
         "cocaine_presumptive":          False,
         "cocaine_packaged":             False,
-        "cocaine_processed":            False,
+        "cocaine_processed":            False
     }
 
 default valid_evidence_steps = {

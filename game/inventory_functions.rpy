@@ -136,12 +136,14 @@ init -5 python:
             if dragged_image != expected:
                 renpy.notify("That's not the right tool for this step.")
                 store.selected_tool = None
+                renpy.hide_screen("drug_processing_screen")
                 renpy.restart_interaction()
                 return False
             store.evidence_marker_placed[store.testing_item] = True
         elif dragged_image != correct_tool_image:
             renpy.notify("That's not the right tool for this step.")
             store.selected_tool = None
+            renpy.hide_screen("drug_processing_screen")
             renpy.restart_interaction()
             return False
 
