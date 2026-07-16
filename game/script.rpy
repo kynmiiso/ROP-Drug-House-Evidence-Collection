@@ -57,7 +57,7 @@ init python:
             current_cursor = cursor
 
     def analyzed_everything() -> None:
-        return prints["print_1"].processed and prints["print_4"].processed
+        return prints["print_4"].processed
 
     def set_timer(item: str):
         item = False
@@ -91,21 +91,6 @@ init python:
             self.processed = False
 
     # declare each piece of evidence
-    cocaine             = Evidence(name = 'cocaine',
-                                afis_details = {
-                                    'image': 'cocaine_idle',
-                                    'xpos':0.18, 'ypos':0.3,
-                                    'score': '70'})
-    methamphetamine     = Evidence(name = 'methamphetamine',
-                                afis_details = {
-                                    'image': 'meth_idle',
-                                    'xpos':0.18, 'ypos':0.3,
-                                    'score': '70'})
-    mdma                = Evidence(name = 'mdma',
-                                afis_details = {
-                                    'image': 'mdma_idle',
-                                    'xpos':0.18, 'ypos':0.3,
-                                    'score': '70'})
     firearm_fingerprint = Evidence(name = 'firearm_fingerprint',
                                 afis_details = {
                                     'image': 'firearm_fingerprint',
@@ -113,15 +98,15 @@ init python:
                                     'score': '70'})
 
     # declare afis relevant evidence
-    afis_evidence = [firearm_fingerprint, cocaine, methamphetamine, mdma]
+    afis_evidence = [firearm_fingerprint]
 
     # set current_evidence to track which evidence is currently active
-    current_evidence = cocaine
+    current_evidence = firearm_fingerprint
 
 default evidence_found = {
         "firearm_processed":            False,
         "firearm_packaged":             False,
-        "fingerprint_processed":        False,
+        # "fingerprint_processed":        False,
         "mdma_presumptive":             False,
         "mdma_packaged":                False,
         "mdma_processed":               False,
@@ -477,7 +462,8 @@ label start:
     scene lab_hallway_dim
     show nina talk
     
-    n "Hello Officer, welcome to the drug house! You can decide to collect evidence on the scene or just skip to the lab analysis portion."
+    n "Hello Officer, welcome to the drug house! I'm Nina, your supervisor." 
+    n "You can either collect evidence on the scene or skip to the lab analysis portion."
 
     menu:
         "Start Investigation (Full playthrough)":
@@ -578,7 +564,6 @@ label lab_hallway_intro:
     n "Officer, good to see you again."
     show nina normal3
     n "Great job processing the scene! I knew I could count on you!"
-    # n "While you've been busy, I talked to the other officers who were on the scene that day. They collected this."
     n "Welcome to the lab! Here, you can analyze all the evidence you collected from the crime scene."
     show nina thinknote1
     n "I need you to perform a pattern analysis on potential fingerprints on the firearm and do a serial number restoration."
@@ -588,17 +573,6 @@ label lab_hallway_intro:
     show nina normal3
     n "You can go wherever you want - but I suggest beginning with the fumehood first so we won't have to waste time waiting for it to heat up."
 
-    # NOTE: the block that used to be here (SpriteManager(event=environmentEvents),
-    # inventoryUpdate/inventoryEvents, toolboxUpdate/toolboxEvents,
-    # toolboxPopUpdate/toolboxPopupEvents, addToToolbox(...), addToInventory(...))
-    # referenced functions that are never defined anywhere in the project
-    # (inventory_functions.rpy and the Item/Inventory system file only define
-    # generic_drop/_use_tool/use_* and the toolbox/evidence Inventory objects).
-    # That was dead code from a different, never-finished environment-sprite
-    # system and crashed with NameError as soon as this label ran. Removed it
-    # and wired the lab up to the actual inventory system used everywhere else
-    # in the project instead.
-
     $config.rollback_enabled = False # disables rollback
     $quick_menu = False # removes quick menu (at bottom of screen)
 
@@ -607,20 +581,11 @@ label lab_hallway_intro:
     # collected/skipped-to, so no extra setup is needed here beyond showing it.
     show screen inventory
 
-    # Reference list of item labels this lab scene deals with, for whenever the
-    # environment-interaction system (fumehood, balance, GC-MS, AFIS terminal,
-    # etc.) gets built. Not yet wired to anything.
     $ inventory_item_names = ["Cocaine sample vial", "MDMA sample vial", "Methamphetamine sample vial", "Analytical balance photo", "Weighed sample bag", "GC-MS printout",
     "Firearm photo", "Firearm with developed print", "Superglue capsule", "Fumehood photo", "Serial number restoration reagent", "Restored serial number photo",
     "Fingerprint on card", "Fingerprint lift - digital scale", "Fingerprint lift - drug packaging", "Fingerprint lift - cell phone", "Backing card", "Scalebar", "Lifting tape",
     "AFIS comparison printout", "Distilled water", "Tweezers", "Gloves box", "Evidence bag", "Jar in bag", "Tape in bag"]
-
-    # Previously this label had no jump, so Ren'Py just fell through to the
-    # next label in the file (data_analysis_lab) and called that screen
-    # immediately — the player never actually saw a choice. The
-    # lab_hallway_screen (in screens.rpy) already has both options wired up
-    # with Jump("data_analysis_lab") / Jump("materials_lab"), so we just need
-    # to actually show it and wait for a click instead of falling through.
+    
     jump lab_hallway_loop
 
 label lab_hallway_loop:
@@ -654,3 +619,12 @@ label materials_lab:
     hide screen back_button_screen onlayer over_screens
     show screen back_button_screen('hallway') onlayer over_screens
     call screen materials_lab_screen
+
+label end:
+    hide screen back_button_screen onlayer over_screens
+    show nina normal1 
+    s "It looks like you've analyzed all the evidence. Great work!"
+    s "I hope you took note of the results. Tomorrow, you'll be testifying in court about your findings."
+    show nina normal3 
+    s "But for now, give yourself a pat on the back and go get some rest!"
+    return

@@ -6,7 +6,7 @@ init python:
     print_imported = False
     imported_print = ""
     current_print = ""
-    NUM_PRINTS = 7
+    NUM_PRINTS = 6
     i = 5
     prints = {}
     
@@ -131,13 +131,12 @@ init python:
     print_1 because I use print_1 as both an importable and non-importable
     print for testing purposes.
     """
-    var_scores = {"print_1": (True, 99), 
+    var_scores = {"print_1": (False, 18), 
                 "print_2": (False, 15), 
                 "print_3": (False, 37),
-                "print_4": (False, 46),
+                "print_4": (True, 99),
                 "print_5": (False, 39),
-                "print_6": (False, 28),
-                "print_7": (False, 15)}
+                "print_6": (False, 28)}
 
     set_scores(print_name="print_1", scores=var_scores)
 
