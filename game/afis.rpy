@@ -132,15 +132,16 @@ init python:
     print for testing purposes.
     """
     var_scores = {"print_1": (False, 18), 
-                "print_2": (False, 15), 
-                "print_3": (False, 37),
-                "print_4": (True, 99),
-                "print_5": (False, 39),
-                "print_6": (False, 28)}
+            "print_2": (False, 15), 
+            "print_3": (False, 37),
+            "print_4": (True, 99),
+            "print_5": (False, 39),
+            "print_6": (False, 28)}
 
-    set_scores(print_name="print_1", scores=var_scores)
+    prints["firearm_fingerprint"] = Print(image = "firearm_fingerprint", 
+                                    scores = var_scores)
 
-    print_1_question = MCQ(
+    firearm_fingerprint_question = MCQ(
         question = "What kind of pattern is shown in the rightmost fingerprint?",
         choices = [("Checkered", False), ("Zigzags", False), ("Whorls", True)],
         responses = [["This is not a checkered pattern!", "Give it another go!"],
@@ -148,27 +149,7 @@ init python:
                     ["This is a whorl! Good job!", "Let's finish the rest of the comparison."]]
     )
 
-    set_mcq(print_name="print_1", mcq=print_1_question)
-
-    print_6_question = MCQ(
-        question = "What kind of pattern is shown in the righmost fingerprint?",
-        choices = [("Double whorls", True), ("Whorls", False), ("Ripples", False)],
-        responses = [["That's right!", "Isn't it cool?", "Let's move on.", "Note: I messed up here lol the pictures aren't centered around the actual double whorl part, but I'll fix it later. :("],
-                    ["You're right, but there's something more!", "Do you see anything interesting about these whorls?", "Think about it some more and try again."],
-                    ["They do look like ripples!", "but not quite!", "Let's try again."]]
-    )
-
-    set_mcq(print_name="print_6", mcq=print_6_question)
-
-    var_scores = {"print_1": (False, 12), 
-                "print_2": (False, 11), 
-                "print_3": (False, 33),
-                "print_4": (True, 91),
-                "print_5": (False, 26),
-                "print_6": (False, 32),
-                "print_7": (False, 11)}
-    
-    set_scores(print_name="print_4", scores=var_scores)
+    set_mcq(print_name="firearm_fingerprint", mcq=firearm_fingerprint_question)
 
 # ---------------------------------------------------------------------------------------
 
@@ -280,7 +261,7 @@ label show_results:
     python:
         for m in range(1, 4):
             
-            if closeups_l[0] != "":
+            if closeups_l[m] != "":
                 renpy.show(name="print_l", at_list=[Transform(zoom=0.83, xpos=0.3, ypos=0.25)], what=closeups_l[m])
             else:
                 renpy.show(name="print_l", at_list=[Transform(zoom=0.83, xpos=0.3, ypos=0.25)], what=prints[imported_print].image)
@@ -297,22 +278,11 @@ label show_results:
     if prints[imported_print].scores[current_print][0]:
         $ prints[imported_print].process_print()
         "This looks like the print with the highest consistency!"
-        if imported_print == "print_1":
-            s think "According to the database... it belongs to a certain Doorag Deelar."
-            # "According to the database... it belongs to a certain Doorag Deelar."
-            s dismayed1 "I'll pass that information onto the officers."
-            s normal1 "They can track him down for us."
-            if oven.state == "preheating" or oven.state == "baking":
-                s normal1 "Meanwhile, it looks like the oven is finished [oven.state]!"
-                s normal1 "Why don't you have a look at it?"
-                $ oven.update_state()
-            $ fingerprint.process_evidence()
-        else: # imported_print == "print_4"
-            s think "Looks like this print belongs to Alex Deere."
-            # "Looks like it belongs to Alex Deere."
-            s normal2 "That's the victim's boyfriend. He was found unconscious at the scene."
-            s normal2 "Currently, he's being held for questioning at the local precinct."
-            s normal1 "We'll be sure to question him some more."
+        if imported_print == "firearm_fingerprint":
+            n think "Looks like this print belongs to Methany Phenthamy."
+            n normal2 "That's the drug house neighbor's daughter. She was often seen hanging out with the drug house's owner, Doorag Deelar."
+            n normal2 "Currently, she is being held for questioning at the local precinct."
+            n normal1 "We'll be sure to question her some more there."
         $ print_imported = False
         $ imported_print = ""
         jump hallway

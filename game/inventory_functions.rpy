@@ -199,3 +199,11 @@ init -5 python:
     def use_magnetic_powder():      _use_tool("Magnetic Powder")
     def use_scalebar():             _use_tool("Scalebar")
     def use_pen():                  _use_tool("Pen")
+
+    def import_firearm_fingerprint():
+        global imported_print
+        if location == "afis":
+            imported_print = "firearm_fingerprint"
+            renpy.jump("import_print")
+        else:
+            renpy.notify("Bring this to AFIS to import it.")

@@ -33,6 +33,14 @@ init python:
         renpy.hide_screen("toolboxPopItemMenu")
         renpy.hide_screen("inspectItem")
 
+    def inventory_actions(item: str) -> None:
+        global imported_print
+
+        if item in ("firearm_fingerprint", "firearm"):
+            if location == "afis" and pressed == "import":
+                imported_print = "firearm_fingerprint"
+                renpy.jump("import_print")
+
     evids = load_items("jsons/evidence.json")
     evids_by_key = {
         "cocaine":     evids.get("Cocaine Sample"),
@@ -73,7 +81,7 @@ init python:
         for e in afis_evidence:
             if e.processed and e!= evidence:
                 afis_search.append(e)
-
+    
     def close_menu():
         if renpy.get_screen("casefile_physical"):
             renpy.hide_screen("casefile_physical")
@@ -106,7 +114,6 @@ init python:
 default evidence_found = {
         "firearm_processed":            False,
         "firearm_packaged":             False,
-        # "fingerprint_processed":        False,
         "mdma_presumptive":             False,
         "mdma_packaged":                False,
         "mdma_processed":               False,
@@ -586,12 +593,18 @@ label lab_hallway_intro:
     "Fingerprint on card", "Fingerprint lift - digital scale", "Fingerprint lift - drug packaging", "Fingerprint lift - cell phone", "Backing card", "Scalebar", "Lifting tape",
     "AFIS comparison printout", "Distilled water", "Tweezers", "Gloves box", "Evidence bag", "Jar in bag", "Tape in bag"]
     
-    jump lab_hallway_loop
+    jump hallway
 
-label lab_hallway_loop:
-    show screen lab_hallway_screen
-    pause
-    jump lab_hallway_loop
+label hallway:
+    $ location = ""
+    $ hide_all_inventory()
+    scene lab_hallway_idle
+    python:
+        if analyzed_everything():
+            renpy.hide_screen("full_inventory")
+            renpy.jump("end")
+    hide screen back_button_screen onlayer over_screens
+    call screen lab_hallway_screen
 
 label data_analysis_lab:
     $ location = ""
