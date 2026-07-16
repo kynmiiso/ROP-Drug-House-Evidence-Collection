@@ -1,18 +1,37 @@
 ﻿image house exterior = "images/Scenes/forensics_house_exterior_placeholder.jpg"
 image house interior = "images/Scenes/forensics_house_interior_placeholder.jpg"
-image house interior zoom1 = "images/Scenes/forensics_house_interior_placeholder_zoom_1.jpg"
-image house interior zoom2 = "images/Scenes/forensics_house_interior_placeholder_zoom_2.jpg"
-image house interior zoom3 = "images/Scenes/forensics_house_interior_placeholder_zoom_3.jpg"
-image house interior zoom4 = "images/Scenes/forensics_house_interior_placeholder_zoom_4.jpg"
+image house interior zoom mdma = "images/Scenes/forensics_house_interior_placeholder_zoom_1.jpg"
+image house interior zoom meth = "images/Scenes/forensics_house_interior_placeholder_zoom_2.jpg"
+image house interior zoom cocaine = "images/Scenes/forensics_house_interior_placeholder_zoom_3.jpg"
+image house interior zoom firearm = "images/Scenes/forensics_house_interior_placeholder_zoom_4.jpg"
+
+image lab_hallway_idle = "images/Scenes/lab_hallway_idle.png"
 
 init python:
     import json
 
     config.mouse = {
-        "default": [("images/cursor.png", 0, 0)],
-        "pointer": [("images/cursor.png", 0, 0)],
-        "hover":   [("images/hover_cursor.png", 0, 0)]
+        "default":          [("images/cursor.png", 0, 0)],
+        "pointer":          [("images/cursor.png", 0, 0)],
+        "hover":            [("images/hover_cursor.png", 0, 0)],
+        "dropper":          [("dropper.png", 0, 49)],
+        "dropper filled":   [("dropper filled.png", 0, 49)],
+        "hand":             [("default_hand.png", 0, 0)]
     }
+
+    default_mouse = "default"
+
+    def hide_all_inventory():
+        renpy.hide_screen("full_inventory")
+        renpy.hide_screen("inventory")
+        renpy.hide_screen("toolbox")
+        renpy.hide_screen("inv_buttons")
+        renpy.hide_screen("close_inv")
+        renpy.hide_screen("toolboxpop")
+        renpy.hide_screen("inventoryItemMenu")
+        renpy.hide_screen("toolboxItemMenu")
+        renpy.hide_screen("toolboxPopItemMenu")
+        renpy.hide_screen("inspectItem")
 
     evids = load_items("jsons/evidence.json")
     evids_by_key = {
@@ -26,6 +45,78 @@ init python:
     tools = load_items("jsons/toolbox.json")
     for tool in tools.values():
         toolbox.add_to_inventory(tool)
+
+    def set_cursor(cursor):
+        global default_mouse
+        global current_cursor
+        if current_cursor == cursor:
+            default_mouse = ''
+            current_cursor = ''
+        else:
+            default_mouse = cursor
+            current_cursor = cursor
+
+    def analyzed_everything() -> None:
+        return prints["print_1"].processed and prints["print_4"].processed
+
+    def set_timer(item: str):
+        item = False
+
+    def disable_timer(item: str):
+        item = True
+
+    def calculate_afis(evidence):
+        global afis_search
+        afis_search = []
+        evidence.processed = True
+
+        for e in afis_evidence:
+            if e.processed and e!= evidence:
+                afis_search.append(e)
+
+    def close_menu():
+        if renpy.get_screen("casefile_physical"):
+            renpy.hide_screen("casefile_physical")
+        elif renpy.get_screen("casefile_photos"):
+            renpy.hide_screen("casefile_photos")
+        elif renpy.get_screen("casefile"):
+            renpy.hide_screen("casefile")
+        else:
+            renpy.show_screen("casefile")
+
+    class Evidence:
+        def __init__(self, name, afis_details):
+            self.name = name
+            self.afis_details = afis_details
+            self.processed = False
+
+    # declare each piece of evidence
+    cocaine             = Evidence(name = 'cocaine',
+                                afis_details = {
+                                    'image': 'cocaine_idle',
+                                    'xpos':0.18, 'ypos':0.3,
+                                    'score': '70'})
+    methamphetamine     = Evidence(name = 'methamphetamine',
+                                afis_details = {
+                                    'image': 'meth_idle',
+                                    'xpos':0.18, 'ypos':0.3,
+                                    'score': '70'})
+    mdma                = Evidence(name = 'mdma',
+                                afis_details = {
+                                    'image': 'mdma_idle',
+                                    'xpos':0.18, 'ypos':0.3,
+                                    'score': '70'})
+    firearm_fingerprint = Evidence(name = 'firearm_fingerprint',
+                                afis_details = {
+                                    'image': 'firearm_fingerprint',
+                                    'xpos':0.18, 'ypos':0.3,
+                                    'score': '70'})
+
+    # declare afis relevant evidence
+    afis_evidence = [firearm_fingerprint, cocaine, methamphetamine, mdma]
+
+    # set current_evidence to track which evidence is currently active
+    current_evidence = cocaine
 
 default evidence_found = {
         "firearm_processed":            False,
@@ -75,15 +166,15 @@ default valid_evidence_steps = {
         "firearm": [
             {"drop_target_idle":                    "marker_dynamic"},
             # {"firearm_idle":                        "uv_light_idle"},
-            # {"firearm_light_idle":                  "magnetic_powder_idle"}, 
+            # {"firearm_light_idle":                  "magnetic_powder_idle"},
             # {"firearm_fingerprint_idle":            "scalebar_idle"},
             # {"fingerprint_scalebar_idle":           "tape_idle"},
-            # {"lifted_fingerprint_idle":             "backing_card_idle"}, 
-            # {"fingerprint_backing_idle":            "pen_idle"}, 
-            # {"fingerprint_backing_initial_idle":    "evidence_bag_idle"}, 
+            # {"lifted_fingerprint_idle":             "backing_card_idle"},
+            # {"fingerprint_backing_idle":            "pen_idle"},
+            # {"fingerprint_backing_initial_idle":    "evidence_bag_idle"},
             # {"evidence_bag_idle":                   "tamper_evident_tape_idle"},
             # "fingerprint_collect",
-            {"firearm_idle":                        "evidence_bag_idle"}, 
+            {"firearm_idle":                        "evidence_bag_idle"},
             {"evidence_bag_idle":                   "tamper_evident_tape_idle"},
             "collect_step"
         ]
@@ -133,6 +224,15 @@ default evidence_inventory = {}
 default fingerprint_collect_ready   = False
 default collect_step_ready          = False
 
+default current_cursor = ''
+default show_case_files = False
+default show_toolbox = False
+default location = "hallway"
+
+# entries on afis when searching
+default afis_search = []
+default afis_search_coordinates = [{'score_xpos': 0.53, 'xpos':0.61, 'ypos':0.505}]
+
 init python:
     def _total_drag_steps(item):
         return sum(1 for s in valid_evidence_steps.get(item, []) if isinstance(s, dict))
@@ -149,7 +249,7 @@ init python:
                     return list(s.keys())[0]
                 drag_index += 1
         return None
-    
+
     def _quiz_is_next():
         if testing_item is None:
             return False
@@ -237,114 +337,6 @@ init python:
         },
     }
 
-screen placed_marker_display(marker_image):
-    add marker_image at Transform(xpos=0.2, ypos=0.1)
-
-screen investigation_buttons():
-    # get the order of the evidence markers
-    $ _order = evidence_visited_order
-    $ cocaine_num  = (_order.index("cocaine")  + 1) if "cocaine"  in _order else None
-    $ mdma_num     = (_order.index("mdma")     + 1) if "mdma"     in _order else None
-    $ meth_num     = (_order.index("meth")     + 1) if "meth"     in _order else None
-    $ firearm_num  = (_order.index("firearm")  + 1) if "firearm"  in _order else None
-
-    if not evidence_found["cocaine_processed"] and not evidence_found["cocaine_packaged"]:
-        imagebutton:
-            xpos 0.43 ypos 0.32
-            idle  ("cocaine_idle" if not evidence_found["cocaine_presumptive"] else "cocaine_blue")
-            hover ("cocaine_hover" if not evidence_found["cocaine_presumptive"] else "cocaine_blue")
-            mouse "hover"
-            hovered   Notify("Suspected drugs")
-            unhovered NullAction()
-            action [
-                SetVariable("testing_item",  "cocaine"),
-                SetVariable("selected_tool", None),
-                Jump("inspect_evidence"),
-            ]
-        if cocaine_num is not None:
-            add ("marker_" + str(cocaine_num)) at Transform(xpos=0.43, ypos=0.32)
-    elif evidence_found["cocaine_packaged"]:
-        if cocaine_num is not None:
-            add ("marker_" + str(cocaine_num)) at Transform(xpos=0.43, ypos=0.32)
-    
-    if not evidence_found["mdma_processed"] and not evidence_found["mdma_packaged"]:
-        imagebutton:
-            xpos 0.46 ypos 0.75
-            idle  ("drawer_idle" if not evidence_found["mdma_presumptive"] else "mdma_purple")
-            hover ("drawer_hover" if not evidence_found["mdma_presumptive"] else "mdma_purple")
-            mouse "hover"
-            hovered   Notify("Drawer")
-            unhovered NullAction()
-            action [
-                SetVariable("testing_item",  "mdma"),
-                SetVariable("selected_tool", None),
-                Jump("inspect_evidence"),
-            ]
-        if mdma_num is not None:
-            add ("marker_" + str(mdma_num)) at Transform(xpos=0.46, ypos=0.75)
-    elif evidence_found["mdma_packaged"]:
-        add ("marker_" + str(mdma_num)) at Transform(xpos=0.46, ypos=0.75)
-
-    if not evidence_found["meth_processed"] and not evidence_found["meth_packaged"]:
-        imagebutton:
-            xpos 0.30 ypos 0.80
-            idle  ("meth_idle" if not evidence_found["meth_presumptive"] else "meth_brown")
-            hover ("meth_hover" if not evidence_found["meth_presumptive"] else "meth_brown")
-            mouse "hover"
-            hovered   Notify("Suspected drugs")
-            unhovered NullAction()
-            action [
-                SetVariable("testing_item",  "meth"),
-                SetVariable("selected_tool", None),
-                Jump("inspect_evidence"),
-            ]
-        if meth_num is not None:
-            add ("marker_" + str(meth_num)) at Transform(xpos=0.30, ypos=0.80)
-    elif evidence_found["meth_packaged"]:
-        add ("marker_" + str(meth_num)) at Transform(xpos=0.30, ypos=0.80)
-    
-    if not evidence_found["firearm_processed"] and not evidence_found["firearm_packaged"]:
-        imagebutton:
-            xpos 0.67 ypos 0.5
-            idle  "firearm_idle"
-            hover "firearm_idle"
-            mouse "hover"
-            hovered   Notify("Firearm")
-            unhovered NullAction()
-            action [
-                SetVariable("testing_item",  "firearm"),
-                SetVariable("selected_tool", None),
-                Jump("inspect_evidence"),
-            ]
-        if firearm_num is not None:
-            add ("marker_" + str(firearm_num)) at Transform(xpos=0.67, ypos=0.5)
-    elif evidence_found["firearm_packaged"]:
-        add ("marker_" + str(firearm_num)) at Transform(xpos=0.67, ypos=0.5)
-
-    if (evidence_found["cocaine_packaged"]
-        and evidence_found["mdma_packaged"]
-        and evidence_found["meth_packaged"]
-        and evidence_found["firearm_packaged"]):
-        textbutton "Finish Investigation":
-            xpos 0.75 ypos 0.9
-            style "hud_button"
-            background "#006"
-            hover_background "#00a"
-            action Jump("investigation_complete")
-
-screen colour_chart(chart_image):
-    modal False
-    add chart_image at Transform(zoom=1.2, xalign=0.3, yalign=0.2)
-
-screen reagent_result(item):
-    modal False
-    if item == "cocaine":
-        add "cocaine_blue_pink" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
-    elif item == "mdma":
-        add "mdma_purple" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
-    elif item == "meth":
-        add "meth_brown" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
-
 label inspect_evidence:
     hide screen investigation_buttons
     show screen inventory
@@ -353,13 +345,13 @@ label inspect_evidence:
         $ evidence_visited_order.append(testing_item)
 
     if "mdma" in testing_item:
-        scene house interior zoom1
+        scene house interior zoom mdma
     elif "meth" in testing_item:
-        scene house interior zoom2
+        scene house interior zoom meth
     elif "cocaine" in testing_item:
-        scene house interior zoom3
+        scene house interior zoom cocaine
     elif "firearm" in testing_item:
-        scene house interior zoom4
+        scene house interior zoom firearm
 
     $ _marker_num = evidence_visited_order.index(testing_item) + 1
     $ _marker_img = "marker_" + str(_marker_num)
@@ -482,6 +474,19 @@ label scene_room_loop:
 define n = Character(name=("Nina"), image="nina")
 
 label start:
+    scene lab_hallway_dim
+    show nina talk
+    
+    n "Hello Officer, welcome to the drug house! You can decide to collect evidence on the scene or just skip to the lab analysis portion."
+
+    menu:
+        "Start Investigation (Full playthrough)":
+            jump house_intro
+
+        "Skip to Lab Analysis":
+            jump skip_to_lab
+
+label house_intro:
     scene house exterior
     show nina normal1
     n "Last night, police officers obtained and executed a search warrant for a room within this residence suspected of being used for drug trafficking activity."
@@ -495,6 +500,18 @@ label start:
     n "Go ahead, let's head inside."
     jump scene_room
 
+label skip_to_lab:
+    # Mark all scene evidence as processed/packaged and pre-load the evidence
+    # inventory so the lab flow has everything it expects, without playing
+    # through the house scene.
+    python:
+        for key in evidence_found:
+            evidence_found[key] = True
+        collected_evidence_inventory = ["cocaine", "mdma", "meth", "firearm", "fingerprint"]
+        for key in ["cocaine", "mdma", "meth", "firearm", "fingerprint"]:
+            evidence.add_to_inventory(evids_by_key[key])
+    jump lab_hallway_intro
+
 label scene_room:
     scene house interior
     "You take photos of the scene and suspicious looking powder scattered about."
@@ -502,7 +519,7 @@ label scene_room:
     n "Here we are. Take a good look around before we start."
     n "Some suspected drugs are scattered around the room."
     n "We'll need to process them with presumptive field tests."
-    n "Fingerprints must also be dusted and collected for identification purposes. All evidence must be packed."
+    n "All evidence must be packed in an evidence bag and sealed with tamper evident tape."
     show nina normal3
     n "Remember, you can check your toolbox and collected evidence on the lefthand side."
     n "Good luck, Officer. We're counting on you to help us solve this case."
@@ -522,37 +539,118 @@ label investigation_complete:
     show nina thinknote1
     n "For now, give yourself a pat on the back!"
 
-    $ testing_item = None
-    $ selected_tool = None
-    $ collect_step_flag = False
-    $ quiz_pending = False
+    # $ testing_item = None
+    # $ selected_tool = None
+    # $ collect_step_flag = False
+    # $ quiz_pending = False
 
-    $ evidence_found = {
-        "firearm_processed":     False,
-        "firearm_packaged":      False,
-        "fingerprint_processed": False,
-        "fingerprint_packaged":  False,
-        "mdma_presumptive":      False,
-        "mdma_packaged":         False,
-        "mdma_processed":        False,
-        "meth_presumptive":      False,
-        "meth_packaged":         False,
-        "meth_processed":        False,
-        "cocaine_presumptive":   False,
-        "cocaine_packaged":      False,
-        "cocaine_processed":     False,
-    }
+    # $ evidence_found = {
+    #     "firearm_processed":     False,
+    #     "firearm_packaged":      False,
+    #     "fingerprint_processed": False,
+    #     "fingerprint_packaged":  False,
+    #     "mdma_presumptive":      False,
+    #     "mdma_packaged":         False,
+    #     "mdma_processed":        False,
+    #     "meth_presumptive":      False,
+    #     "meth_packaged":         False,
+    #     "meth_processed":        False,
+    #     "cocaine_presumptive":   False,
+    #     "cocaine_packaged":      False,
+    #     "cocaine_processed":     False,
+    # }
 
-    $ evidence_step_index = {"cocaine": 0, "mdma": 0, "meth": 0, "firearm": 0}
-    $ evidence_marker_placed = {"cocaine": False, "mdma": False, "meth": False, "firearm": False}
-    $ evidence_visited_order = []
+    # $ evidence_step_index = {"cocaine": 0, "mdma": 0, "meth": 0, "firearm": 0}
+    # $ evidence_marker_placed = {"cocaine": False, "mdma": False, "meth": False, "firearm": False}
+    # $ evidence_visited_order = []
 
-    $ cocaine_id_confirmed = False
-    $ mdma_id_confirmed    = False
-    $ meth_id_confirmed    = False
+    # $ cocaine_id_confirmed = False
+    # $ mdma_id_confirmed    = False
+    # $ meth_id_confirmed    = False
 
-    $ evidence.reset_inventory()
-    $ collected_evidence_inventory = []
-    $ evidence_inventory = {}
+    # $ evidence.reset_inventory()
+    # $ collected_evidence_inventory = []
+    # $ evidence_inventory = {}
 
-    return
+label lab_hallway_intro:
+    scene lab_hallway_idle
+    show nina normal1
+    n "Officer, good to see you again."
+    show nina normal3
+    n "Great job processing the scene! I knew I could count on you!"
+    # n "While you've been busy, I talked to the other officers who were on the scene that day. They collected this."
+    n "Welcome to the lab! Here, you can analyze all the evidence you collected from the crime scene."
+    show nina thinknote1
+    n "I need you to perform a pattern analysis on potential fingerprints on the firearm and do a serial number restoration."
+    n "You will also have to conduct a GC-MS test to identify the chemical compounds of the presumed drugs collected on the field."
+    n "For the firearm, you'll have to use the superglue fumehood to vaporise the super glue that will bind to the fingerprint amino acids."
+    n "Then, you will have to use AFIS to compare your fingerprint to the existing dataset of fingerprints to figure out the suspect's identity."
+    show nina normal3
+    n "You can go wherever you want - but I suggest beginning with the fumehood first so we won't have to waste time waiting for it to heat up."
+
+    # NOTE: the block that used to be here (SpriteManager(event=environmentEvents),
+    # inventoryUpdate/inventoryEvents, toolboxUpdate/toolboxEvents,
+    # toolboxPopUpdate/toolboxPopupEvents, addToToolbox(...), addToInventory(...))
+    # referenced functions that are never defined anywhere in the project
+    # (inventory_functions.rpy and the Item/Inventory system file only define
+    # generic_drop/_use_tool/use_* and the toolbox/evidence Inventory objects).
+    # That was dead code from a different, never-finished environment-sprite
+    # system and crashed with NameError as soon as this label ran. Removed it
+    # and wired the lab up to the actual inventory system used everywhere else
+    # in the project instead.
+
+    $config.rollback_enabled = False # disables rollback
+    $quick_menu = False # removes quick menu (at bottom of screen)
+
+    # toolbox is already populated at game start (see the `tools = load_items(...)`
+    # loop near the top of script.rpy), and evidence is populated as it's
+    # collected/skipped-to, so no extra setup is needed here beyond showing it.
+    show screen inventory
+
+    # Reference list of item labels this lab scene deals with, for whenever the
+    # environment-interaction system (fumehood, balance, GC-MS, AFIS terminal,
+    # etc.) gets built. Not yet wired to anything.
+    $ inventory_item_names = ["Cocaine sample vial", "MDMA sample vial", "Methamphetamine sample vial", "Analytical balance photo", "Weighed sample bag", "GC-MS printout",
+    "Firearm photo", "Firearm with developed print", "Superglue capsule", "Fumehood photo", "Serial number restoration reagent", "Restored serial number photo",
+    "Fingerprint on card", "Fingerprint lift - digital scale", "Fingerprint lift - drug packaging", "Fingerprint lift - cell phone", "Backing card", "Scalebar", "Lifting tape",
+    "AFIS comparison printout", "Distilled water", "Tweezers", "Gloves box", "Evidence bag", "Jar in bag", "Tape in bag"]
+
+    # Previously this label had no jump, so Ren'Py just fell through to the
+    # next label in the file (data_analysis_lab) and called that screen
+    # immediately — the player never actually saw a choice. The
+    # lab_hallway_screen (in screens.rpy) already has both options wired up
+    # with Jump("data_analysis_lab") / Jump("materials_lab"), so we just need
+    # to actually show it and wait for a click instead of falling through.
+    jump lab_hallway_loop
+
+label lab_hallway_loop:
+    show screen lab_hallway_screen
+    pause
+    jump lab_hallway_loop
+
+label data_analysis_lab:
+    $ location = ""
+    hide screen full_inventory
+    python:
+        if analyzed_everything():
+            renpy.hide_screen("full_inventory")
+            renpy.jump("end")
+    show screen back_button_screen('hallway') onlayer over_screens
+    call screen data_analysis_lab_screen
+
+label afis:
+    hide screen back_button_screen onlayer over_screens
+    hide screen full_inventory
+    show screen back_button_screen('data_analysis_lab') onlayer over_screens
+    call screen afis_screen
+
+label materials_lab:
+    $ location = ""
+    $ hide_all_inventory()
+    python:
+        if analyzed_everything():
+            renpy.hide_screen("full_inventory")
+            renpy.jump("end")
+    hide screen back_button_screen onlayer over_screens
+    show screen back_button_screen('hallway') onlayer over_screens
+    call screen materials_lab_screen

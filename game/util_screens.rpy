@@ -4,7 +4,7 @@ screen back_button_screen(old_location):
     hbox:
         xalign 0.94 yalign 0.96
         imagebutton:
-            idle "back_button" at Transform(zoom=0.2)
+            idle "back_button_idle" at Transform(zoom=0.2)
             hover "back_button_hover"
             action [SetVariable("imported_print", ""), SetVariable("print_imported", False), Hide('afis_screen'), Hide("casefile_physical"), SetVariable("location", old_location), Jump(old_location)]
 

@@ -138,7 +138,6 @@ init python:
     ### set current_evidence to track which evidence is currently active
     current_evidence = screwdriver
 
-
 #################################### START #############################################
 label start:
     # Dial variables

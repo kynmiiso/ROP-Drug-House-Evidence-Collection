@@ -65,6 +65,113 @@ screen drug_collection_screen():
             Return()
         ]
         
+screen placed_marker_display(marker_image):
+    add marker_image at Transform(xpos=0.2, ypos=0.1)
+
+screen investigation_buttons():
+    # get the order of the evidence markers
+    $ _order = evidence_visited_order
+    $ cocaine_num  = (_order.index("cocaine")  + 1) if "cocaine"  in _order else None
+    $ mdma_num     = (_order.index("mdma")     + 1) if "mdma"     in _order else None
+    $ meth_num     = (_order.index("meth")     + 1) if "meth"     in _order else None
+    $ firearm_num  = (_order.index("firearm")  + 1) if "firearm"  in _order else None
+
+    if not evidence_found["cocaine_processed"] and not evidence_found["cocaine_packaged"]:
+        imagebutton:
+            xpos 0.43 ypos 0.32
+            idle  ("cocaine_idle" if not evidence_found["cocaine_presumptive"] else "cocaine_blue")
+            hover ("cocaine_hover" if not evidence_found["cocaine_presumptive"] else "cocaine_blue")
+            mouse "hover"
+            hovered   Notify("Suspected drugs")
+            unhovered NullAction()
+            action [
+                SetVariable("testing_item",  "cocaine"),
+                SetVariable("selected_tool", None),
+                Jump("inspect_evidence"),
+            ]
+        if cocaine_num is not None:
+            add ("marker_" + str(cocaine_num)) at Transform(xpos=0.43, ypos=0.32)
+    elif evidence_found["cocaine_packaged"]:
+        if cocaine_num is not None:
+            add ("marker_" + str(cocaine_num)) at Transform(xpos=0.43, ypos=0.32)
+    
+    if not evidence_found["mdma_processed"] and not evidence_found["mdma_packaged"]:
+        imagebutton:
+            xpos 0.46 ypos 0.75
+            idle  ("drawer_idle" if not evidence_found["mdma_presumptive"] else "mdma_purple")
+            hover ("drawer_hover" if not evidence_found["mdma_presumptive"] else "mdma_purple")
+            mouse "hover"
+            hovered   Notify("Drawer")
+            unhovered NullAction()
+            action [
+                SetVariable("testing_item",  "mdma"),
+                SetVariable("selected_tool", None),
+                Jump("inspect_evidence"),
+            ]
+        if mdma_num is not None:
+            add ("marker_" + str(mdma_num)) at Transform(xpos=0.46, ypos=0.75)
+    elif evidence_found["mdma_packaged"]:
+        add ("marker_" + str(mdma_num)) at Transform(xpos=0.46, ypos=0.75)
+
+    if not evidence_found["meth_processed"] and not evidence_found["meth_packaged"]:
+        imagebutton:
+            xpos 0.30 ypos 0.80
+            idle  ("meth_idle" if not evidence_found["meth_presumptive"] else "meth_brown")
+            hover ("meth_hover" if not evidence_found["meth_presumptive"] else "meth_brown")
+            mouse "hover"
+            hovered   Notify("Suspected drugs")
+            unhovered NullAction()
+            action [
+                SetVariable("testing_item",  "meth"),
+                SetVariable("selected_tool", None),
+                Jump("inspect_evidence"),
+            ]
+        if meth_num is not None:
+            add ("marker_" + str(meth_num)) at Transform(xpos=0.30, ypos=0.80)
+    elif evidence_found["meth_packaged"]:
+        add ("marker_" + str(meth_num)) at Transform(xpos=0.30, ypos=0.80)
+    
+    if not evidence_found["firearm_processed"] and not evidence_found["firearm_packaged"]:
+        imagebutton:
+            xpos 0.67 ypos 0.5
+            idle  "firearm_idle"
+            hover "firearm_idle"
+            mouse "hover"
+            hovered   Notify("Firearm")
+            unhovered NullAction()
+            action [
+                SetVariable("testing_item",  "firearm"),
+                SetVariable("selected_tool", None),
+                Jump("inspect_evidence"),
+            ]
+        if firearm_num is not None:
+            add ("marker_" + str(firearm_num)) at Transform(xpos=0.67, ypos=0.5)
+    elif evidence_found["firearm_packaged"]:
+        add ("marker_" + str(firearm_num)) at Transform(xpos=0.67, ypos=0.5)
+
+    if (evidence_found["cocaine_packaged"]
+        and evidence_found["mdma_packaged"]
+        and evidence_found["meth_packaged"]
+        and evidence_found["firearm_packaged"]):
+        textbutton "Finish Investigation":
+            xpos 0.75 ypos 0.9
+            style "hud_button"
+            background "#006"
+            hover_background "#00a"
+            action Jump("investigation_complete")
+
+screen colour_chart(chart_image):
+    modal False
+    add chart_image at Transform(zoom=1.2, xalign=0.3, yalign=0.2)
+
+screen reagent_result(item):
+    modal False
+    if item == "cocaine":
+        add "cocaine_blue_pink" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
+    elif item == "mdma":
+        add "mdma_purple" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
+    elif item == "meth":
+        add "meth_brown" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
 
 # initial screen
 screen lab_hallway_screen:
