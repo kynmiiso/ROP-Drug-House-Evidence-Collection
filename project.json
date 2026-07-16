@@ -1,7 +1,7 @@
 {
   "build_update": false,
   "packages": [
-    "market"
+    "win"
   ],
   "add_from": true,
   "force_recompile": true,

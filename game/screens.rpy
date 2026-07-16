@@ -71,37 +71,6 @@ style vslider:
 style frame:
     padding gui.frame_borders.padding
     background Frame("gui/frame.png", gui.frame_borders, tile=gui.frame_tile)
-
-
-################################################################################
-## In-game screens
-################################################################################
-
-# Drag and drop screen
-screen drag_and_drop(drag_name, drag_image, drop_name, drop_image):
-    draggroup:
-        drag:
-            drag_name drag_name
-            draggable True
-            droppable False
-
-            dragged item_dragged_package
-            dragging item_dragging_package
-
-            xpos 400
-            ypos 250
-
-            add drag_image
-        drag:
-            drag_name drop_name
-            draggable False
-            droppable True
-
-            xpos 900
-            ypos 250
-
-            add drop_image
-
         
 # screen fingerprint_processing_screen()
 
@@ -1684,40 +1653,3 @@ style slider_slider:
     variant "small"
     xsize 900
 
-# ---------------------------------------------------------------------------
-# Generic drug processing screen
-# Drop target image and position come from the current step dict.
-# Tool draggable only appears after player clicks Use (selected_tool set).
-# ---------------------------------------------------------------------------
-
-screen drug_processing_screen(drop_image, drop_xpos, drop_ypos):
-    draggroup:
-        if selected_tool is not None:
-            drag:
-                drag_name selected_tool
-                draggable True
-                droppable False
-                dragging item_dragging_package
-                dragged  generic_drop
-                xpos 0.75 ypos 0.35
-                child Transform(selected_tool, zoom=1.5)
-        drag:
-            drag_name drop_image
-            draggable False
-            droppable True
-            xalign 0.5 yalign 0.5
-            child Transform(drop_image, zoom=2)
-
-screen drug_collection_screen():
-    modal True
-    imagebutton:
-        idle "casefile_evidence_idle"
-        hover "casefile_evidence_hover"
-        at Transform(zoom=2)
-        xalign 0.5
-        yalign 0.5
-        action [
-            SetVariable("collect_step_flag", True),
-            Return()
-        ]
-        
