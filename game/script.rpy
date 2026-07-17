@@ -34,10 +34,12 @@ init python:
         renpy.hide_screen("inspectItem")
 
     def inventory_actions(item: str) -> None:
-        global imported_print
+        global imported_print, selected_tool
 
-        if item in ("firearm_fingerprint", "firearm"):
-            if location == "afis" and pressed == "import":
+        if item == "firearm":
+            if location == "fumehood" and fumehood_state == "empty":
+                selected_tool = "firearm"
+            elif location == "afis" and pressed == "import":
                 imported_print = "firearm_fingerprint"
                 renpy.jump("import_print")
 

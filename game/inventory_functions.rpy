@@ -2,6 +2,7 @@ default fumehood_water_added    = False
 default fumehood_glue_added     = False
 default fumehood_firearm_placed = False
 default fumehood_state          = "empty"   # "empty" -> "loaded" -> "closed"
+default fumehood_done           = False
 
 init -5 python:
 
@@ -230,12 +231,14 @@ init -5 python:
         store.selected_tool = "toolbox-superglue"
         renpy.restart_interaction()
 
-    def place_firearm_in_fumehood():
-        if store.fumehood_firearm_placed:
-            renpy.notify("The firearm is already in the fumehood.")
+    def use_firearm():
+        if location != "fumehood":
+            renpy.notify("Bring this to the fumehood to use it.")
             return
-        store.fumehood_firearm_placed = True
-        renpy.notify("Firearm placed in the fumehood chamber.")
+        if fumehood_state != "empty":
+            renpy.notify("The fumehood isn't ready for the firearm right now.")
+            return
+        store.selected_tool = "inventory-firearm"
         renpy.restart_interaction()
 
     def fumehood_drop(drags, drop):

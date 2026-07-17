@@ -286,7 +286,7 @@ screen materials_lab_screen:
             auto "oven_%s" at Transform(zoom=0.7)
             # hovered Notify("Dry Oven")
             # unhovered Notify('')
-            action [SetVariable("location", "oven"), Jump("oven")]
+            action [SetVariable("location", "gcms"), Jump("gcms")]
     text "Dry Oven" xpos 0.31 ypos 0.66
     
     hbox:

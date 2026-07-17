@@ -261,10 +261,8 @@ init -10 python:
         
         return items
     
-
-    toolbox = Inventory()
-    evidence = Inventory()
-
+default toolbox = Inventory()
+default evidence = Inventory()
 
 screen inventory():
     # This is the main screen for the inventory. To use it, write either
