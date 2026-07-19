@@ -272,34 +272,23 @@ screen afis_screen:
 screen materials_lab_screen:
     image "materials_lab"
 
-    # hbox:
-    #     xpos 0.15 yalign 0.5
-    #     imagebutton:
-    #         idle "wet_lab_idle"
-    #         hover "wet_lab_hover"
-    #         hovered Notify("Wet Lab")
-    #         unhovered Notify('')
-    #         action Jump('wet_lab')
     hbox:
         xpos 0.26 yalign 0.5
         imagebutton:
-            auto "oven_%s" at Transform(zoom=0.7)
-            # hovered Notify("Dry Oven")
-            # unhovered Notify('')
+            auto "gcms_%s" at Transform(zoom=0.7)
             action [SetVariable("location", "gcms"), Jump("gcms")]
-    text "Dry Oven" xpos 0.31 ypos 0.66
-    
+    text "GC-MS" xpos 0.31 ypos 0.66
+
     hbox:
         xpos 0.52 yalign 0.5
         imagebutton:
-            auto "fumehood_%s" at Transform(zoom=0.95)
-            # hovered Notify("Fumehood")
-            # unhovered Notify('')
-            action [SetVariable("location", "fumehood"), Jump("fumehood")]
-    text "Fumehood" xpos 0.59 ypos 0.67
+            auto "ca_chamber_%s" at Transform(zoom=0.95)
+            action [SetVariable("location", "ca_chamber"), Jump("ca_chamber")]
+    
+    text "Cyanoacrylate Chamber" xpos 0.59 ypos 0.67
 
 screen wet_lab_screen:
-    image "fumehood"
+    image "ca_chamber"
 
 screen analytical_instruments_screen:
     image "lab_bench"

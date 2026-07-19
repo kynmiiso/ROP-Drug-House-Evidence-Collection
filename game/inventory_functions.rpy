@@ -1,8 +1,8 @@
-default fumehood_water_added    = False
-default fumehood_glue_added     = False
-default fumehood_firearm_placed = False
-default fumehood_state          = "empty"   # "empty" -> "loaded" -> "closed"
-default fumehood_done           = False
+default ca_chamber_water_added    = False
+default ca_chamber_glue_added     = False
+default ca_chamber_firearm_placed = False
+default ca_chamber_state          = "empty"   # "empty" -> "loaded" -> "closed"
+default ca_chamber_done           = False
 
 init -5 python:
 
@@ -209,8 +209,8 @@ init -5 python:
     def import_firearm_fingerprint():
         global imported_print
         if location == "afis":
-            if not fumehood_done:
-                renpy.notify("Process the firearm in the fumehood before importing a print.")
+            if not ca_chamber_done:
+                renpy.notify("Process the firearm in the CA chamber before importing a print.")
                 return
             imported_print = "firearm_fingerprint"
             renpy.jump("import_print")
@@ -218,66 +218,25 @@ init -5 python:
             renpy.notify("Bring this to AFIS to import it.")
 
     def use_distilled_water():
-        if location != "fumehood":
-            renpy.notify("Bring this to the fumehood to use it.")
+        if location != "ca_chamber":
+            renpy.notify("Bring this to the CA chamber to use it.")
             return
         store.selected_tool = "toolbox-distilled_water"
         renpy.restart_interaction()
 
     def use_superglue():
-        if location != "fumehood":
-            renpy.notify("Bring this to the fumehood to use it.")
+        if location != "ca_chamber":
+            renpy.notify("Bring this to the CA chamber to use it.")
             return
         store.selected_tool = "toolbox-superglue"
         renpy.restart_interaction()
 
     def use_firearm():
-        if location != "fumehood":
-            renpy.notify("Bring this to the fumehood to use it.")
+        if location != "ca_chamber":
+            renpy.notify("Bring this to the CA chamber to use it.")
             return
-        if fumehood_state != "empty":
-            renpy.notify("The fumehood isn't ready for the firearm right now.")
+        if ca_chamber_state != "empty":
+            renpy.notify("The CA chamber isn't ready for the firearm right now.")
             return
         store.selected_tool = "inventory-firearm"
-        renpy.restart_interaction()
-
-    def fumehood_drop(drags, drop):
-        if not drop:
-            store.selected_tool = None
-            renpy.restart_interaction()
-            return False
-
-        dragged_image = drags[0].drag_name
-
-        if dragged_image == "toolbox-distilled_water" and not store.fumehood_water_added:
-            store.fumehood_water_added = True
-            renpy.notify("Distilled water added.")
-        elif dragged_image == "toolbox-superglue" and not store.fumehood_glue_added:
-            store.fumehood_glue_added = True
-            renpy.notify("Superglue added.")
-        else:
-            renpy.notify("That doesn't belong in the fumehood right now.")
-            store.selected_tool = None
-            renpy.restart_interaction()
-            return False
-
-        store.selected_tool = None
-        renpy.restart_interaction()
-        return True
-
-    def load_fumehood():
-        if store.fumehood_state != "empty":
-            renpy.notify("The fumehood is already loaded.")
-            return
-        if not (store.fumehood_water_added and store.fumehood_glue_added and store.fumehood_firearm_placed):
-            renpy.notify("Add the distilled water, superglue, and firearm first.")
-            return
-        store.fumehood_state = "loaded"
-        renpy.restart_interaction()
-
-    def close_fumehood():
-        if store.fumehood_state != "loaded":
-            renpy.notify("Nothing to close yet.")
-            return
-        store.fumehood_state = "closed"
         renpy.restart_interaction()

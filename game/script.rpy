@@ -4,6 +4,7 @@ image house interior zoom mdma = "images/Scenes/forensics_house_interior_placeho
 image house interior zoom meth = "images/Scenes/forensics_house_interior_placeholder_zoom_2.jpg"
 image house interior zoom cocaine = "images/Scenes/forensics_house_interior_placeholder_zoom_3.jpg"
 image house interior zoom firearm = "images/Scenes/forensics_house_interior_placeholder_zoom_4.jpg"
+image firearm_fumed = "images/firearm_fumed.jpg"
 
 image lab_hallway_idle = "images/Scenes/lab_hallway_idle.png"
 
@@ -37,7 +38,7 @@ init python:
         global imported_print, selected_tool
 
         if item == "firearm":
-            if location == "fumehood" and fumehood_state == "empty":
+            if location == "ca_chamber" and ca_chamber_state == "empty":
                 selected_tool = "firearm"
             elif location == "afis" and pressed == "import":
                 imported_print = "firearm_fingerprint"
@@ -559,12 +560,12 @@ label lab_hallway_intro:
     n "Great job processing the scene! I knew I could count on you!"
     n "Welcome to the lab! Here, you can analyze all the evidence you collected from the crime scene."
     show nina thinknote1
-    n "I need you to perform a pattern analysis on potential fingerprints on the firearm and do a serial number restoration."
-    n "You will also have to conduct a GC-MS test to identify the chemical compounds of the presumed drugs collected on the field."
-    n "For the firearm, you'll have to use the superglue fumehood to vaporise the super glue that will bind to the fingerprint amino acids."
+    n "I need you to perform a fingerprint analysis on potential prints on the firearm."
+    n "For the firearm, you'll have to use the Cyanoacrylate Chamber to bind the fingerprint onto the gun."
     n "Then, you will have to use AFIS to compare your fingerprint to the existing dataset of fingerprints to figure out the suspect's identity."
+    n "You will also have to conduct a GC-MS test to identify the chemical compounds of the presumed drugs collected on the field."
     show nina normal3
-    n "You can go wherever you want - but I suggest beginning with the fumehood first so we won't have to waste time waiting for it to heat up."
+    n "You can go wherever you want - but I suggest beginning with the Cyanoacrylate Chamber first so we won't have to waste time waiting for it to heat up."
 
     $config.rollback_enabled = False # disables rollback
     $quick_menu = False # removes quick menu (at bottom of screen)
@@ -575,10 +576,10 @@ label lab_hallway_intro:
     show screen inventory
 
     $ inventory_item_names = ["Cocaine sample vial", "MDMA sample vial", "Methamphetamine sample vial", "Analytical balance photo", "Weighed sample bag", "GC-MS printout",
-    "Firearm photo", "Firearm with developed print", "Superglue capsule", "Fumehood photo", "Serial number restoration reagent", "Restored serial number photo",
+    "Firearm photo", "Firearm with developed print", "Superglue capsule", "CA Chamber photo", "Serial number restoration reagent", "Restored serial number photo",
     "Fingerprint on card", "Fingerprint lift - digital scale", "Fingerprint lift - drug packaging", "Fingerprint lift - cell phone", "Backing card", "Scalebar", "Lifting tape",
     "AFIS comparison printout", "Distilled water", "Tweezers", "Gloves box", "Evidence bag", "Jar in bag", "Tape in bag"]
-    
+
     jump hallway
 
 label hallway:
