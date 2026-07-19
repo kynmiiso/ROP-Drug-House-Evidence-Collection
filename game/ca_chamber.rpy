@@ -62,17 +62,17 @@ screen ca_chamber_screen():
                     xalign 0.5 yalign 0.5
                     child Transform(Solid("#00000000"), size=(300, 300))
 
-                textbutton "Close Chamber":
-                    xalign 0.5 ypos 0.85
-                    xsize 400 ysize 90
-                    text_size 42
-                    text_color "#ffffff"
-                    text_align 0.5
-                    background "#012a4a"
-                    hover_background "#0466c8"
-                    insensitive_background "#3a3a3a"
-                    sensitive (ca_chamber_water_added and ca_chamber_glue_added and ca_chamber_firearm_placed)
-                    action Function(close_ca_chamber)
+            textbutton "Close Chamber":
+                xalign 0.5 ypos 0.85
+                xsize 400 ysize 90
+                text_size 42
+                text_color "#ffffff"
+                text_align 0.5
+                background "#012a4a"
+                hover_background "#0466c8"
+                insensitive_background "#3a3a3a"
+                sensitive (ca_chamber_water_added and ca_chamber_glue_added and ca_chamber_firearm_placed)
+                action Function(close_ca_chamber)
 
         elif ca_chamber_state == "closed":
             textbutton "Set Temperature & Time":
