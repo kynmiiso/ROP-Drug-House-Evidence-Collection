@@ -12,49 +12,25 @@ init python:
     ca_correct_temp_start = ""
     ca_correct_temp_end = ""
 
-    ca_temp_button_active = {}
-    ca_time_button_active = {}
-
     class CANumberEntry:
-        """A custom data type representing a 3-digit number entry (temp or time).
-
-        Preconditions:
-        - 0 <= hundred_digit <= 9
-        - 0 <= ten_digit <= 9
-        - 0 <= one_digit <= 9
-        - curr_digit == "hundred" or curr_digit == "ten" or curr_digit == "one"
-        """
+        """A custom data type representing a multi-digit number entry (temp or time)."""
         hundred_digit: int
         ten_digit: int
         one_digit: int
         curr_digit: str
         selected: str
 
-        def __init__(self) -> None:
+        def __init__(self, start_digit="hundred") -> None:
             self.hundred_digit = None
             self.ten_digit = None
             self.one_digit = None
             self.selected = ""
-            self.curr_digit = "hundred"
+            self.curr_digit = start_digit
 
         def increase_place(self) -> None:
             if self.curr_digit == "hundred":
-                if on_ca_temperature:
-                    for i in [1, 3, 4, 6, 8, 9]:
-                        ca_temp_button_active[i] = False
-                    ca_temp_button_active[0] = True
-                else:
-                    for i in [6, 7, 8, 9]:
-                        ca_time_button_active[i] = False
-                    ca_time_button_active[0] = True
                 self.curr_digit = "ten"
             elif self.curr_digit == "ten":
-                for i in [2, 7]:
-                    if on_ca_temperature:
-                        ca_temp_button_active[i] = False
-                    if on_ca_timer:
-                        for i in [6, 7, 8, 9]:
-                            ca_time_button_active[i] = True
                 self.curr_digit = "one"
             self.update_selected()
 
@@ -73,42 +49,27 @@ init python:
             one_digit = 0 if self.one_digit is None else self.one_digit
             self.selected = f"{hundred_digit}{ten_digit}{one_digit}"
 
-        def reset(self) -> None:
+        def reset(self, start_digit="hundred") -> None:
             self.hundred_digit = None
             self.ten_digit = None
             self.one_digit = None
-            self.curr_digit = "hundred"
+            self.curr_digit = start_digit
 
     def ca_decrease_place(entry: CANumberEntry) -> None:
         if entry.curr_digit == "one":
             if entry.one_digit is not None:
                 entry.one_digit = None
             else:
-                if on_ca_temperature:
-                    for i in [2, 7]:
-                        ca_temp_button_active[i] = True
-                else:
-                    for i in [6, 7, 8, 9]:
-                        ca_time_button_active[i] = False
                 entry.curr_digit = "ten"
                 entry.ten_digit = None
         elif entry.curr_digit == "ten":
             if entry.ten_digit is not None:
                 entry.ten_digit = None
             else:
-                if on_ca_temperature:
-                    for i in [1, 3, 4, 6, 8, 9]:
-                        ca_temp_button_active[i] = True
-                    ca_temp_button_active[0] = False
-                else:
-                    for i in [6, 7, 8, 9]:
-                        ca_time_button_active[i] = True
                 entry.curr_digit = "hundred"
                 entry.hundred_digit = None
         elif entry.curr_digit == "hundred":
             entry.hundred_digit = None
-            if on_ca_temperature:
-                ca_temp_button_active[0] = False
         entry.update_selected()
 
     def ca_update_number(entry: CANumberEntry, i: int):
@@ -120,40 +81,21 @@ init python:
             entry.update_hundred_digit(i)
         entry.increase_place()
 
-    def ca_calculate_true_minutes(value: str) -> int:
-        """Returns value as a total count (hundred*60 + ten*10 + one).
-        value should be a 3-character string, e.g. "012" -> 12.
-        """
-        # BUG FIX: original code did `time[0] * 60` which multiplies a
-        # *string character* by 60 (string repetition) instead of doing
-        # arithmetic. Each digit must be cast to int first.
-        return int(value[0]) * 60 + int(value[1]) * 10 + int(value[2])
-
     def ca_verify_time(start: str, end: str, value: str) -> bool:
-        true_value = ca_calculate_true_minutes(value)
-        true_start = ca_calculate_true_minutes(start)
-        true_end = ca_calculate_true_minutes(end)
-        return true_start <= true_value < true_end
+        return int(start) <= int(value) < int(end)
 
     def ca_verify_temp(start: str, end: str, value: str) -> bool:
         return int(start) <= int(value) < int(end)
 
     def reset_ca_chamber_entry():
-        """Call this before showing the ca_chamber settings screen each time,
-        so leftover digits/button-lock state from a previous use don't carry over."""
         global on_ca_temperature, on_ca_timer
         on_ca_temperature = False
         on_ca_timer = False
         ca_temp.reset()
-        ca_timer.reset()
-        for p in range(0, 10):
-            ca_temp_button_active[p] = True
-            ca_time_button_active[p] = True
-        ca_temp_button_active[0] = False
+        ca_timer.reset(start_digit="ten")
 
     ca_temp = CANumberEntry()
-    ca_timer = CANumberEntry()
-
+    ca_timer = CANumberEntry(start_digit="ten")
 
 screen ca_chamber_keyboard():
     frame:
@@ -163,9 +105,7 @@ screen ca_chamber_keyboard():
         background "#c8c6cb"
 
     for i, x in enumerate([0.175, 0.3, 0.425, 0.55, 0.675], start=1):
-        $ top_button_active = ca_temp_button_active[i] if on_ca_temperature else ca_time_button_active[i]
         $ j = 0 if i + 5 == 10 else i + 5
-        $ bottom_button_active = ca_temp_button_active[j] if on_ca_temperature else ca_time_button_active[j]
         vbox:
             align (x, 0.72)
             spacing 10
@@ -173,7 +113,6 @@ screen ca_chamber_keyboard():
                 action If(on_ca_temperature, Function(ca_update_number, ca_temp, i), Function(ca_update_number, ca_timer, i))
                 style "keyboard_button"
                 text_style "keyboard_text"
-                sensitive top_button_active
         vbox:
             align (x, 0.83)
             spacing 10
@@ -181,7 +120,6 @@ screen ca_chamber_keyboard():
                 action If(on_ca_temperature, Function(ca_update_number, ca_temp, j), Function(ca_update_number, ca_timer, j))
                 style "keyboard_button"
                 text_style "keyboard_text"
-                sensitive bottom_button_active
 
     vbox:
         align (0.825, 0.83)
@@ -195,7 +133,6 @@ screen ca_chamber_keyboard():
             hover "backspace_button_hover"
             action If(on_ca_temperature, Function(ca_decrease_place, ca_temp), Function(ca_decrease_place, ca_timer))
             at Transform(xsize=200, ysize=85)
-
 
 style adjust_button:
     background "#f1eff4"
@@ -330,7 +267,7 @@ screen ca_chamber_main_interface():
     python:
         ten_disp = "0" if ca_timer.ten_digit is None else ca_timer.ten_digit
         one_disp = "0" if ca_timer.one_digit is None else ca_timer.one_digit
-        complete_ca_time = "0" + str(ten_disp) + str(one_disp)
+        complete_ca_time = str(ten_disp) + str(one_disp)
 
     text "{b}[ten_disp][one_disp] minutes{/b}":
         size 60

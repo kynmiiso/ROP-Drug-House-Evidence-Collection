@@ -49,7 +49,6 @@ init python:
         "cocaine":            evids.get("Cocaine Sample"),
         "mdma":                evids.get("MDMA Sample"),
         "meth":                evids.get("Meth Sample"),
-        "fingerprint":         evids.get("Fingerprint"),
         "firearm":             evids.get("Firearm"),
         "firearm_fingerprint": evids.get("Firearm Fingerprint Photo"),
     }
@@ -376,9 +375,6 @@ label inspect_evidence:
         if quiz_pending:
             jump evidence_quiz
 
-        if fingerprint_collect_ready:
-            jump fingerprint_collect_step
-
         if collect_step_ready:
             jump collect_step
 
@@ -398,18 +394,18 @@ label inspect_evidence:
         $ renpy.pause(0.3)
         jump evidence_wait_step
 
-    label fingerprint_collect_step:
-        $ fingerprint_collect_ready = False
-        hide screen drug_processing_screen
-        show screen drug_collection_screen
-        "Click to collect and package the lifted fingerprint."
-        $ evidence_found["fingerprint_processed"] = True
-        $ evidence_found["fingerprint_packaged"]  = True
-        $ evidence.add_to_inventory(evids_by_key["fingerprint"])
-        $ fingerprint_collected = True
-        $ renpy.restart_interaction()
-        hide screen drug_collection_screen
-        jump evidence_wait_step
+    # label fingerprint_collect_step:
+    #     $ fingerprint_collect_ready = False
+    #     hide screen drug_processing_screen
+    #     show screen drug_collection_screen
+    #     "Click to collect and package the lifted fingerprint."
+    #     $ evidence_found["fingerprint_processed"] = True
+    #     $ evidence_found["fingerprint_packaged"]  = True
+    #     $ evidence.add_to_inventory(evids_by_key["fingerprint"])
+    #     $ fingerprint_collected = True
+    #     $ renpy.restart_interaction()
+    #     hide screen drug_collection_screen
+    #     jump evidence_wait_step
 
     label collect_step:
         $ collect_step_ready = False
@@ -467,8 +463,8 @@ label inspect_evidence:
         $ selected_tool             = None
         $ collect_step_flag         = False
         $ quiz_pending              = False
-        $ fingerprint_collected     = False
-        $ fingerprint_collect_ready = False
+        # $ fingerprint_collected     = False
+        # $ fingerprint_collect_ready = False
         $ collect_step_ready        = False
 
         $ renpy.restart_interaction()
@@ -518,8 +514,8 @@ label skip_to_lab:
     python:
         for key in evidence_found:
             evidence_found[key] = True
-        collected_evidence_inventory = ["cocaine", "mdma", "meth", "firearm", "fingerprint"]
-        for key in ["cocaine", "mdma", "meth", "firearm", "fingerprint"]:
+        collected_evidence_inventory = ["cocaine", "mdma", "meth", "firearm"]
+        for key in ["cocaine", "mdma", "meth", "firearm"]:
             evidence.add_to_inventory(evids_by_key[key])
     jump lab_hallway_intro
 

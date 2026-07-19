@@ -27,13 +27,17 @@ init python:
         return True
 
     def close_ca_chamber():
-        global ca_chamber_state
-        ca_chamber_state = "closed"
+        if store.ca_chamber_state != "empty":
+            return
+        if not (store.ca_chamber_water_added and store.ca_chamber_glue_added and store.ca_chamber_firearm_placed):
+            renpy.notify("Add the distilled water, superglue, and firearm first.")
+            return
+        store.ca_chamber_state = "closed"
         renpy.restart_interaction()
 
 screen ca_chamber_screen():
     $ bg_image = (
-        "ca_chamber_closed" if (ca_chamber_done or ca_chamber_state == "closed")
+        "ca_chamber_closed" if (ca_chamber_done or ca_chamber_state in ("closed", "loaded"))
         else "ca_chamber_firearm" if ca_chamber_firearm_placed
         else "ca_chamber_empty"
     )
@@ -58,19 +62,28 @@ screen ca_chamber_screen():
                     xalign 0.5 yalign 0.5
                     child Transform(Solid("#00000000"), size=(300, 300))
 
-            textbutton "Load CA Chamber":
-                xpos 0.4 ypos 0.85
-                background "#003366"
-                hover_background "#0055aa"
-                sensitive (ca_chamber_water_added and ca_chamber_glue_added and ca_chamber_firearm_placed)
-                action Jump("ca_chamber_load_dialogue")
+                textbutton "Close Chamber":
+                    xalign 0.5 ypos 0.85
+                    xsize 400 ysize 90
+                    text_size 42
+                    text_color "#ffffff"
+                    text_align 0.5
+                    background "#012a4a"
+                    hover_background "#0466c8"
+                    insensitive_background "#3a3a3a"
+                    sensitive (ca_chamber_water_added and ca_chamber_glue_added and ca_chamber_firearm_placed)
+                    action Function(close_ca_chamber)
 
-        elif ca_chamber_state == "loaded":
-            textbutton "Close CA Chamber":
-                xpos 0.4 ypos 0.85
-                background "#003366"
-                hover_background "#0055aa"
-                action Function(close_ca_chamber)
+        elif ca_chamber_state == "closed":
+            textbutton "Set Temperature & Time":
+                xalign 0.5 ypos 0.85
+                xsize 480 ysize 90
+                text_size 42
+                text_color "#ffffff"
+                text_align 0.5
+                background "#012a4a"
+                hover_background "#0466c8"
+                action Jump("ca_chamber_load_dialogue")
 
 label ca_chamber:
     hide screen materials_lab_screen
@@ -82,24 +95,24 @@ label ca_chamber:
     show screen back_button_screen('materials_lab') onlayer over_screens
 
 label ca_chamber_load_dialogue:
-    if ca_chamber_done or not (ca_chamber_water_added and ca_chamber_glue_added and ca_chamber_firearm_placed):
+    if ca_chamber_done or ca_chamber_state != "closed":
         jump ca_chamber_wait_step
 
     hide screen ca_chamber_screen
-    n normal1 "Set the CA chamber to the correct temperature and time."
+    n normal1 "Set the CA chamber to between 120-150 degrees celsius and 12-15 minutes."
 
     $ reset_ca_chamber_entry()
-    $ ca_correct_temp_start = "120"   # 120 degrees celsius
-    $ ca_correct_temp_end   = "151"   # it's an exclusive end, so 150 counts
-    $ ca_correct_time_start = "012"   # 12 minutes
-    $ ca_correct_time_end   = "016"   # it's an exclusive end, so 15 counts
+    $ ca_correct_temp_start = "120"
+    $ ca_correct_temp_end   = "151"
+    $ ca_correct_time_start = "12"
+    $ ca_correct_time_end   = "16"
     $ ca_correct_label      = "ca_chamber_settings_confirmed"
     $ ca_incorrect_label    = "ca_chamber_settings_incorrect"
 
     call screen ca_chamber_main_interface
 
 label ca_chamber_settings_incorrect:
-    n normal1 "That's not quite right. Remember set it to 120-150 degrees for 12-15 minutes."
+    n normal1 "That's not quite right. Remember: 120-150 degrees, 12-15 minutes."
     call screen ca_chamber_main_interface
 
 label ca_chamber_settings_confirmed:
@@ -107,15 +120,15 @@ label ca_chamber_settings_confirmed:
     hide screen ca_chamber_temperature_screen
     hide screen ca_chamber_cooking_time_screen
     $ ca_chamber_state = "loaded"
-    n normal1 "Correct! You've set the CA chamber between 120-150 degrees for 12-15 minutes."
+    n normal1 "You've correctly set the CA chamber between 120-150 degrees for 12-15 minutes!"
     show screen ca_chamber_screen
-    n normal1 "Now waiting an additional 5 minute purging period..."
+    n normal1 "Now wait an additional 5 minute purging period..."
     $ renpy.pause(3.0)
     n normal1 "Purging complete."
     jump ca_chamber_wait_step
 
 label ca_chamber_wait_step:
-    if ca_chamber_state == "closed" and not ca_chamber_done:
+    if ca_chamber_state == "loaded" and not ca_chamber_done:
         jump ca_chamber_finish
     $ renpy.pause(3)
     jump ca_chamber_wait_step

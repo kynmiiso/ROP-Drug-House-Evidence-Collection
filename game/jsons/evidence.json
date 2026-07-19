@@ -15,11 +15,6 @@
         "image_name": "inventory-meth"
     },
     {
-        "key": "fingerprint",
-        "name": "Fingerprint",
-        "image_name": "inventory-fingerprint"
-    },
-    {
         "key": "firearm",
         "name": "Firearm",
         "image_name": "inventory-firearm", 
