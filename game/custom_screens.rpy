@@ -310,7 +310,7 @@ screen ca_chamber_screen():
                         droppable False
                         dragging item_dragging_package
                         dragged  ca_chamber_drop
-                        xpos 0.75 ypos 0.35
+                        xpos 0.65 ypos 0.60
                         child Transform(selected_tool, zoom=1.5)
                 drag:
                     drag_name "ca_chamber_dropzone"
@@ -345,8 +345,8 @@ screen ca_chamber_screen():
 screen ca_chamber_checklist:
     add "images/materials_lab/ca_chamber/ca_fuming_checklist/ca_fuming_checklist_%d.png" % ca_chamber_step:
         xalign 0.999999
-        yalign 0.0
-
+        yalign 0.3
+        
 screen ca_chamber_amount_check():
     modal True
     if ca_pending_mcq == "water":

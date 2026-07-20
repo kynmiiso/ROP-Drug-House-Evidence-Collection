@@ -16,11 +16,11 @@ init python:
         dragged_image = drags[0].drag_name
 
         if dragged_image == "toolbox-distilled_water" and store.ca_chamber_step == 1 and not store.ca_chamber_water_added:
-            store.ca_chamber_water_added = True
-            renpy.notify("Distilled water added.")
+            store.ca_pending_mcq = "water"
+            renpy.show_screen("ca_chamber_amount_check")
         elif dragged_image == "toolbox-superglue" and store.ca_chamber_step == 2 and not store.ca_chamber_glue_added:
-            store.ca_chamber_glue_added = True
-            renpy.notify("Superglue added.")
+            store.ca_pending_mcq = "glue"
+            renpy.show_screen("ca_chamber_amount_check")
         elif dragged_image == "inventory-firearm" and store.ca_chamber_step == 3 and not store.ca_chamber_firearm_placed:
             store.ca_chamber_step = 4
             store.ca_chamber_firearm_placed = True
@@ -52,6 +52,7 @@ init python:
                 renpy.notify("Wrong.")
 
         store.ca_pending_mcq = None
+        renpy.hide_screen("ca_chamber_amount_check")
         store.selected_tool = None
         renpy.restart_interaction()
 
@@ -72,7 +73,6 @@ label ca_chamber:
     scene materials_lab
     show screen ca_chamber_screen
     show screen ca_chamber_checklist
-    show screen ca_chamber_amount_check
     show screen inventory
     show screen back_button_screen('materials_lab') onlayer over_screens
 
@@ -81,7 +81,6 @@ label ca_chamber_load_dialogue:
         jump ca_chamber_wait_step
 
     hide screen ca_chamber_screen
-    n normal1 "Set the CA chamber to between 120-150 degrees celsius and 12-15 minutes."
 
     $ reset_ca_chamber_entry()
     $ ca_correct_temp_start = "120"
@@ -101,12 +100,18 @@ label ca_chamber_settings_confirmed:
     hide screen ca_chamber_keyboard
     hide screen ca_chamber_temperature_screen
     hide screen ca_chamber_cooking_time_screen
+    hide screen ca_chamber_checklist
     $ ca_chamber_state = "loaded"
+    $ ca_chamber_step = 6
     n normal1 "You've correctly set the CA chamber between 120-150 degrees for 12-15 minutes!"
     show screen ca_chamber_screen
+    show screen ca_chamber_checklist
     n normal1 "Now wait an additional 5 minute purging period..."
-    $ renpy.pause(3.0)
+    jump ca_chamber_purging_complete
+
+label ca_chamber_purging_complete:
     n normal1 "Purging complete."
+    $ ca_chamber_step = 7
     jump ca_chamber_wait_step
 
 label ca_chamber_wait_step:
@@ -117,15 +122,20 @@ label ca_chamber_wait_step:
 
 label ca_chamber_finish:
     $ ca_chamber_done = True
-    hide screen ca_chamber_amount_check
+    $ ca_chamber_step = 8
     hide screen ca_chamber_screen
-    hide screen ca_chamber_checklist
     hide screen inventory
     hide screen back_button_screen onlayer over_screens
     show firearm_fumed at Transform(xalign=0.5, yalign=0.1)
     n normal1 "The superglue fumes have bonded to the fingerprint."
     n normal3 "Let's take the firearm out and photograph it."
-    "You took a photo of the fingerprints on the fumed firearm."
     hide firearm_fumed
+    show firearm_fingerprint at Transform(xalign=0.5, yalign=0.1)
+    "You took a photo of the fingerprints on the fumed firearm."
+    $ ca_chamber_step = 8
+    n normal1 "CA Fuming checklist complete!" 
+    hide firearm_fingerprint
+    hide screen ca_chamber_checklist
+    hide screen ca_chamber_amount_check
     $ evidence.add_to_inventory(evids_by_key["firearm_fingerprint"])
     jump materials_lab
