@@ -344,59 +344,59 @@ screen ca_chamber_screen():
 
 screen spe_spo: # the solid phase extraction checklist
     if(step_num_SPE == 1 and spe_difficulty == 0):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full1.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_full1.png":
             xalign 0.999999
     elif(step_num_SPE == 1 and spe_difficulty == 1):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half1.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_half1.png":
             xalign 0.999999
     elif(step_num_SPE <= 2 and spe_difficulty == 2):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_low1.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_low1.png":
             xalign 0.999999
     elif(step_num_SPE == 2 and spe_difficulty == 0):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full2.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_full2.png":
             xalign 0.999999
     elif(step_num_SPE == 2 and spe_difficulty == 1):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half2.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_half2.png":
             xalign 0.999999
     elif(step_num_SPE <= 3 and spe_difficulty == 2):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_low2.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_low2.png":
             xalign 0.999999
     elif(step_num_SPE == 3 and spe_difficulty == 0):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full3.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_full3.png":
             xalign 0.999999
     elif(step_num_SPE == 3 and spe_difficulty == 1):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half3.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_half3.png":
             xalign 0.999999
     elif(step_num_SPE <= 5 and spe_difficulty == 2):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_low3.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_low3.png":
             xalign 0.999999
     elif(step_num_SPE == 4 and spe_difficulty == 0):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full4.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_full4.png":
             xalign 0.999999
     elif(step_num_SPE == 4 and spe_difficulty == 1):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half4.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_half4.png":
             xalign 0.999999
     elif(step_num_SPE <= 6 and spe_difficulty == 2):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_low4.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_low4.png":
             xalign 0.999999
     elif(step_num_SPE == 5 and spe_difficulty == 0):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full5.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_full5.png":
             xalign 0.999999
     elif(step_num_SPE == 5 and spe_difficulty == 1):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half5.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_half5.png":
             xalign 0.999999
     elif(step_num_SPE <= 7 and spe_difficulty == 2):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_low5.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_low5.png":
             xalign 0.999999
     elif(step_num_SPE == 6 and spe_difficulty == 0):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full6.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_full6.png":
             xalign 0.999999
     elif(step_num_SPE == 6 and spe_difficulty == 1):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half6.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_half6.png":
             xalign 0.999999
     elif(step_num_SPE == 7 and spe_difficulty == 0):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full7.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_full7.png":
             xalign 0.999999
     elif(step_num_SPE == 7 and spe_difficulty == 1):
-        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half7.png":
+        add "images/materials_lab/spe/spe_checklist/spe_checklist_half7.png":
             xalign 0.999999

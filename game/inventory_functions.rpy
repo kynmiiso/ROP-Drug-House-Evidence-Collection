@@ -1,362 +1,281 @@
-init python:
-    import json
+default ca_chamber_water_added    = False
+default ca_chamber_glue_added     = False
+default ca_chamber_firearm_placed = False
+default ca_chamber_state          = "empty"   # "empty" -> "loaded" -> "closed"
+default ca_chamber_done           = False
 
-    # FUNCTION FOR DRAG AND DROP
-    def put_in_bag(drags, drop):
-        if drop:
-            return True
-        else: 
+init -5 python:
+
+    def item_dragging_package(drags):
+        global default_mouse
+        default_mouse = "hand_grab"
+
+    _IMAGE_TO_DRAG_NAME = {
+        "marker_1": "marker_1",
+        "marker_2": "marker_2",
+        "marker_3": "marker_3",
+        "marker_4": "marker_4",
+        "marquis_reagent_idle":      "marquis_reagent_idle",
+        "scott_reagent_idle":        "scott_reagent_idle",
+        "tube_idle":                 "tube_idle",
+        "evidence_bag_idle":         "evidence_bag_idle",
+        "tamper_evident_tape_idle":  "tamper_evident_tape_idle",
+        "backing_card_idle":         "backing_card_idle",
+        "tape_idle":                 "tape_idle",
+        "uv_light_idle":             "uv_light_idle",
+        "magnetic_powder_idle":      "magnetic_powder_idle",
+        "scalebar_idle":             "scalebar_idle",
+        "pen_idle":                  "pen_idle"
+    }
+
+    _TOOL_NAME_TO_IMAGE = {
+        "Evidence Markers":     "marker_dynamic",
+        "Marquis Reagent":      "marquis_reagent_idle",
+        "Scott Reagent":        "scott_reagent_idle",
+        "Tube":                 "tube_idle",
+        "Evidence Bag":         "evidence_bag_idle",
+        "Tamper Evident Tape":  "tamper_evident_tape_idle",
+        "Backing Card":         "backing_card_idle",
+        "Tape":                 "tape_idle",
+        "UV Light":             "uv_light_idle",
+        "Magnetic Powder":      "magnetic_powder_idle",
+        "Scalebar":             "scalebar_idle",
+        "Pen":                  "pen_idle"
+    }
+
+    def _get_current_step():
+        if testing_item is None:
+            return None
+        steps = valid_evidence_steps.get(testing_item, [])
+        idx = store.evidence_step_index.get(testing_item, 0)
+        drag_step = 0
+        for s in steps:
+            if isinstance(s, dict):
+                if drag_step == idx:
+                    return s
+                drag_step += 1
+        return None
+
+    def _total_drag_steps(item):
+        return sum(1 for s in valid_evidence_steps.get(item, []) if isinstance(s, dict))
+
+    def _current_drop_image():
+        if testing_item is None:
+            return None
+        steps = valid_evidence_steps.get(testing_item, [])
+        idx = store.evidence_step_index.get(testing_item, 0)
+        drag_index = 0
+        for s in steps:
+            if isinstance(s, dict):
+                if drag_index == idx:
+                    return list(s.keys())[0]
+                drag_index += 1
+        return None
+
+    def _marker_after_index(item, idx):
+        """
+        Return the string marker immediately following dict step at position idx,
+        or None if the next entry is another dict or end of list.
+        """
+        steps = valid_evidence_steps.get(item, [])
+        drag_count = 0
+        for i, s in enumerate(steps):
+            if isinstance(s, dict):
+                if drag_count == idx:
+                    if i + 1 < len(steps) and isinstance(steps[i + 1], str):
+                        return steps[i + 1]
+                    return None
+                drag_count += 1
+        return None
+
+    def _quiz_is_next():
+        if testing_item is None:
+            return False
+        idx = store.evidence_step_index.get(testing_item, 0)
+        return _marker_after_index(testing_item, idx) == "quiz"
+
+    def _fingerprint_collect_is_next():
+        """
+        True only when the COMPLETED step (idx - 1) has fingerprint_collect
+        immediately after it — meaning we just finished the tamper tape step
+        that precedes the fingerprint_collect marker.
+        """
+        if testing_item is None:
+            return False
+        idx = store.evidence_step_index.get(testing_item, 0)
+        if idx == 0:
+            return False
+        # Check marker after the step we just completed (idx - 1)
+        return _marker_after_index(testing_item, idx - 1) == "fingerprint_collect"
+
+    def _collect_step_is_next():
+        if testing_item is None:
+            return False
+        idx = store.evidence_step_index.get(testing_item, 0)
+        if idx == 0:
+            return False
+        return _marker_after_index(testing_item, idx - 1) == "collect_step"
+
+    def _advance_step():
+        idx = store.evidence_step_index.get(testing_item, 0)
+        store.evidence_step_index[testing_item] = idx + 1
+
+    def generic_drop(drags, drop):
+        if not drop:
+            store.selected_tool = None
+            renpy.restart_interaction()
+            return False
+
+        dragged_image = drags[0].drag_name
+        step = _get_current_step()
+
+        if step is None:
+            store.selected_tool = None
+            renpy.restart_interaction()
+            return False
+
+        correct_tool_image = list(step.values())[0]
+
+        if correct_tool_image == "marker_dynamic":
+            order = store.evidence_visited_order
+            expected = "marker_" + str(order.index(store.testing_item) + 1)
+            if dragged_image != expected:
+                renpy.notify("That's not the right tool for this step.")
+                store.selected_tool = None
+                renpy.hide_screen("drug_processing_screen")
+                renpy.restart_interaction()
+                return False
+            store.evidence_marker_placed[store.testing_item] = True
+        elif dragged_image != correct_tool_image:
+            renpy.notify("That's not the right tool for this step.")
+            store.selected_tool = None
+            renpy.hide_screen("drug_processing_screen")
+            renpy.restart_interaction()
+            return False
+
+        _advance_step()
+
+        new_idx = store.evidence_step_index.get(store.testing_item, 0)
+        marker = _marker_after_index(store.testing_item, new_idx - 1)
+
+        if marker == "quiz":
+            store.evidence_found[store.testing_item + "_presumptive"] = True
+            store.quiz_pending = True
+        elif marker == "fingerprint_collect":
+            store.fingerprint_collect_ready = True
+        elif marker == "collect_step":
+            store.collect_step_ready = True
+
+        store.selected_tool = None
+        renpy.restart_interaction()
+        return True
+
+    def _use_tool(tool_name):
+        if testing_item is None:
+            renpy.notify("Select an evidence item first.")
             return
+        image_name = _TOOL_NAME_TO_IMAGE.get(tool_name)
+        if image_name is None:
+            renpy.notify("This tool can't be used here.")
+            return
+        store.selected_tool = image_name
+        renpy.restart_interaction()
 
-# CODE BELOW IS FOR THE LAB ------------------------------------------------------------------------------------------
-# -------------------------------------------------------------------------------------------------------------
-# LAB VARS ---
-default in_lab = False
-# SPE
-default spe_difficulty = 0 # 0 = full checklist, 1 = half checklist, 2 = low checklist
-default has_SPE_cocaine = False
-default has_SPE_mdma = False
-default has_SPE_meth = False
-default step_SPE = ""
-default step_num_SPE = 1 # see ipad notes for specifics, relates to which step to do, related to the spe_spo
-default inv_call_SPE = ""
-default choice_SPE = ""
+    def use_evidence_markers():
+        if testing_item is None:
+            renpy.notify("Select an evidence item first.")
+            return
+        order = store.evidence_visited_order
+        if testing_item not in order:
+            renpy.notify("This evidence hasn't been logged yet.")
+            return
+        num = order.index(testing_item) + 1
+        image_name = "marker_" + str(num)
+        store.selected_tool = image_name
+        renpy.restart_interaction()
 
-# LAB LABELS ----------
-label lab:
-    scene black
-    $ in_lab = True
+    def use_marquis_reagent():      _use_tool("Marquis Reagent")
+    def use_scott_reagent():        _use_tool("Scott Reagent")
+    def use_tube():                 _use_tool("Tube")
+    def use_evidence_bag():         _use_tool("Evidence Bag")
+    def use_tamper_evident_tape():  _use_tool("Tamper Evident Tape")
+    def use_backing_card():         _use_tool("Backing Card")
+    def use_tape():                 _use_tool("Tape")
+    def use_uv_light():             _use_tool("UV Light")
+    def use_magnetic_powder():      _use_tool("Magnetic Powder")
+    def use_scalebar():             _use_tool("Scalebar")
+    def use_pen():                  _use_tool("Pen")
 
-    #removing previous toolbox items
-    # $ toolbox.delete_from_inventory(tools["Evidence Markers"])
-    # $ toolbox.delete_from_inventory(tools["Marquis Reagent"])
-    # $ toolbox.delete_from_inventory(tools["Scott Reagent"])
-    # $ toolbox.delete_from_inventory(tools["Tube"])
-    # $ toolbox.delete_from_inventory(tools["Evidence Bag"])
-    # $ toolbox.delete_from_inventory(tools["Tamper Evident Tape"])
+    def import_firearm_fingerprint():
+        global imported_print
+        if location == "afis":
+            if not ca_chamber_done:
+                renpy.notify("Process the firearm in the CA chamber before importing a print.")
+                return
+            imported_print = "firearm_fingerprint"
+            renpy.jump("import_print")
+        else:
+            renpy.notify("Bring this to AFIS to import it.")
 
-    # adding correct toolbox items
-    # $ toolbox.add_to_inventory(tools["100% Methanol"])
-    # $ toolbox.add_to_inventory(tools["Distilled Water"])
-    # $ toolbox.add_to_inventory(tools["1% Formic acid"])
-    # $ toolbox.add_to_inventory(tools["0.1% Formic acid"])
-    # $ toolbox.add_to_inventory(tools["Methanol and 5% Ammonium Hydroxide"])
+    def use_distilled_water():
+        if location != "ca_chamber":
+            renpy.notify("Bring this to the CA chamber to use it.")
+            return
+        store.selected_tool = "toolbox-distilled_water"
+        renpy.restart_interaction()
 
-    "What would you like to start with?"
-    jump lab_choice
+    def use_superglue():
+        if location != "ca_chamber":
+            renpy.notify("Bring this to the CA chamber to use it.")
+            return
+        store.selected_tool = "toolbox-superglue"
+        renpy.restart_interaction()
 
-# this is handled by lab_hallway_screen, materials_lab_screen, and data_analysis_lab_screen and called in script.rpy
-# label lab_choice: # may add GC-MS and GC-headspace, but these are the minimum requirements to analyse
-#     scene black
-#     menu:
-#         "Solid phase extraction [choice_SPE]":
-#             jump solid_phase_extraction
-#         "GC-MS":
-#             jump lc_ms
-#         "Fingerprinting Analysis":
-#             jump fingerprint_analysis
-#         "Blender":
-#             jump blender
-#         "Vortex mixer":
-#             jump vortexmixer
-#         "Centrifuge":
-#             jump centrifuge
-#     return
+    def use_firearm():
+        if location != "ca_chamber":
+            renpy.notify("Bring this to the CA chamber to use it.")
+            return
+        if ca_chamber_state != "empty":
+            renpy.notify("The CA chamber isn't ready for the firearm right now.")
+            return
+        store.selected_tool = "inventory-firearm"
+        renpy.restart_interaction()
 
-# SOLID PHASE EXTRACTION CODE
-# there are 5 steps for drugs too, 1. dilute the mixture, 2. condition the cartridge, 
-# 3. load it with the sample, 4. wash the cartridge, 5. elution (obtain the extracted compound)
-label solid_phase_extraction:
-    #PRE-TREATMENT
-    hide screen materials_lab_screen
-    scene lab_counter_bk
-    show beaker_empty:
-        xalign 0.5
-        yalign 0.5
-    show nina talk
-    n "Before you do anything, you'll need to pre-treat your sample and dilute it 1:1 with an acidic buffer."
-    n "Which drug sample do you want to dilute?"
-    hide nina talk
-    menu:
-        "Cocaine Sample" if not has_SPE_cocaine:
-            show beaker_drug:
-                xalign 0.5
-                yalign 0.5
-        "MDMA Sample" if not has_SPE_mdma:
-            show beaker_drug:
-                xalign 0.5
-                yalign 0.5
-        "Methamphetamine Sample" if not has_SPE_meth:
-            show beaker_drug:
-                xalign 0.5
-                yalign 0.5
-    jump SPE_dilute_question
+    def use_methanol():
+        renpy.jump("useMethanol")
 
-label SPE_dilute_question:
-    $ inv_call_SPE = "SPE_dilute_question"
-    $ step_SPE = "SPE_condition"
-    "What will you use to dilute the drug sample?"
-    call screen inventory
-    return
+    def use_step3():
+        renpy.jump("useStep3")
 
-label SPE_condition:
-    scene spe11
-    show screen spe_spo
-    $ inv_call_SPE = "SPE_condition"
-    $ step_SPE = "SPE_condition1"
-    call screen inventory
+    def use_01formic():
+        renpy.jump("use01Formic")
 
-label SPE_condition1:
-    scene spe12
-    $ step_num_SPE = 2 # catridge has been reinsed with methanol waiting for 2
-    "Vacuum update to what flow rate?"
-    menu:
-        "5 mL/minute":
-            jump SPE_condition2
-        "1 mL/minute":
-            "Wrong."
-            jump SPE_condition1
+    def use_5amm():
+        renpy.jump("use5Amm")
 
-label SPE_condition2:
-    $ inv_call_SPE = "SPE_condition2"
-    $ step_SPE = "SPE_condition3" #1% formic acid or water
-    scene spe13
-    call screen inventory
+    def use_cocaine_sample():
+        renpy.jump("useCocaine")
 
-label SPE_condition3:
-    scene spe14
-    $ step_num_SPE = 3 # catridge has been reinsed with formic or water waiting for loading
-    "Vacuum update to what flow rate?"
-    menu:
-        "5 mL/minute":
-            jump SPE_loading
-        "1 mL/minute":
-            "Wrong. Try again."
-            jump SPE_condition3
+    def use_mdma_sample():
+        renpy.jump("useMDMA")
 
-label SPE_loading:
-    scene spe13
-    $ renpy.pause(0.5, hard=True)
-    scene spe21
-    $ inv_call_SPE = "SPE_loading"
-    $ step_SPE = "SPE_loading1"
-    call screen inventory
+    def use_meth_sample():
+        renpy.jump("useMeth")
 
-label SPE_loading1:
-    scene spe22
-    $ step_num_SPE = 4 # drugs in, next wash w/formic
-    "Vacuum update to what flow rate?"
-    menu:
-        "5 mL/minute":
-            "Wrong. Try again."
-            jump SPE_loading1
-        "1 mL/minute":
-            jump SPE_washing
+    def use_prepared_cocaine():
+        if location != "gcms":
+            renpy.notify("Bring this to the GC-MS to analyze it.")
+            return
+        renpy.notify("GC-MS analysis coming soon.")
 
-label SPE_washing:
-    scene spe23
-    $ renpy.pause(0.5, hard=True)
-    scene spe31
-    $ inv_call_SPE = "SPE_washing"
-    $ step_SPE = "SPE_washing1"
-    call screen inventory
+    def use_prepared_mdma():
+        if location != "gcms":
+            renpy.notify("Bring this to the GC-MS to analyze it.")
+            return
+        renpy.notify("GC-MS analysis coming soon.")
 
-label SPE_washing1:
-    scene spe32
-    $ step_num_SPE = 5 # washg fromic, next wash w/methanol
-    "Vacuum update to what flow rate?"
-    menu:
-        "5 mL/minute":
-            "Wrong. Try again."
-            jump SPE_washing1
-        "1 mL/minute":
-            jump SPE_washing2
-
-label SPE_washing2:
-    scene spe33
-    $ inv_call_SPE = "SPE_washing2"
-    $ step_SPE = "SPE_washing3" #methanol
-    call screen inventory
-
-label SPE_washing3:
-    scene spe34
-    $ step_num_SPE = 6 # 5% ammonium hydroxide ELUTION
-    "Vacuum update to what flow rate?"
-    menu:
-        "5 mL/minute":
-            "Wrong."
-            jump SPE_washing3
-        "1 mL/minute":
-            jump SPE_elution
-
-label SPE_elution:
-    scene spe33
-    $ renpy.pause(0.5, hard=True)
-    scene spe41
-    $ inv_call_SPE = "SPE_elution"
-    $ step_SPE = "SPE_elution1"
-    call screen inventory
-
-label SPE_elution1:
-    $ step_num_SPE = 7
-    scene spe42
-    "Vacuum update to what flow rate?"
-    menu:
-        "5 mL/minute":
-            "Wrong."
-            jump SPE_elution1
-        "1 mL/minute":
-            jump SPE_elution2
-
-label SPE_elution2:
-    scene spe43
-    "What temperature should the mixture be dried at?"
-    # can add the timer, so like, do fingerprinting analysis while the mixture dries
-    menu:
-        "37 Celsius": # this is the correct temperature, ummmm may change this
-            scene spe44
-            "You've obtained the prepared sample."
-            if(has_SPE_cocaine):
-                $ evidence.add_to_inventory(evids["Prepared Cocaine Sample"])
-            elif(has_SPE_mdma):
-                $ evidence.add_to_inventory(evids["Prepared MDMA Sample"])
-            elif(has_SPE_meth):
-                $ evidence.add_to_inventory(evids["Prepared Meth Sample"])
-            if(has_SPE_cocaine and has_SPE_mdma and has_SPE_meth):
-                $ choice_SPE = "COMPLETED"
-            # reset counter
-            hide screen spe_spo
-            $ step_num_SPE = 1
-            jump lab_choice
-        # can add other choices here
-
-# toolbox stuffs for SPE
-label use5Amm:
-    if(inv_call_SPE == "SPE_dilute_question"):
-        "Wrong!"
-        jump expression inv_call_SPE
-    else:
-        if(step_num_SPE != 6):
-            "Wrong compound!"
-            jump expression inv_call_SPE
-
-        "How much will you add?"
-        menu:
-            "1 mL":
-                jump expression step_SPE
-            "2 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-            "5 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-
-label use01Formic:
-    if(inv_call_SPE == "SPE_dilute_question"):
-        "Wrong!"
-        jump expression inv_call_SPE
-    else:
-        if(step_num_SPE != 4):
-            "Wrong compound!"
-            jump expression inv_call_SPE
-
-        "How much will you add?"
-        menu:
-            "1 mL":
-                jump expression step_SPE
-            "2 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-            "5 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-
-label useMethanol:
-    if(inv_call_SPE == "SPE_dilute_question"):
-        "Wrong!"
-        jump expression inv_call_SPE
-    else:
-        if(step_num_SPE != 1 and step_num_SPE != 5):
-            "Wrong compound!"
-            jump expression inv_call_SPE
-
-        "How much will you add?"
-        menu:
-            "1 mL":
-                jump expression step_SPE
-            "2 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-            "5 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-            # can add other options here
-
-label useStep3: # 1% formic acid 
-    if(inv_call_SPE == "SPE_dilute_question"):
-        show nina normal1
-        "Good! Now we'll start."
-        hide nina normal1
-        jump expression step_SPE
-    else:
-        if(step_num_SPE != 2):
-            "Wrong compound!"
-            jump expression inv_call_SPE
-
-        "How much will you add?"
-        menu:
-            "1 mL":
-                jump expression step_SPE
-            "2 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-            "5 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-
-label useWater: # use water
-    if(inv_call_SPE == "SPE_dilute_question"):
-        "Wrong!"
-        jump expression inv_call_SPE
-    else:
-        if(step_num_SPE != 2):
-            "Wrong compound!"
-            jump expression inv_call_SPE
-
-        "How much will you add?"
-        menu:
-            "1 mL":
-                jump expression step_SPE
-            "2 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-            "5 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-
-label useCocaine:
-    $ has_SPE_cocaine = True
-    if(step_num_SPE == 3):
-        $ evidence.delete_from_inventory(evids["Cocaine Sample"])
-        jump expression step_SPE
-    else:
-        "Wrong compound!"
-        jump expression inv_call_SPE
-
-label useMDMA:
-    $ has_SPE_mdma = True
-    if(step_num_SPE == 3):
-        $ evidence.delete_from_inventory(evids["MDMA Sample"])
-        jump expression step_SPE
-    else:
-        "Wrong compound!"
-        jump expression inv_call_SPE
-
-label useMeth:
-    $ has_SPE_meth = True
-    if(step_num_SPE == 3):
-        $ evidence.delete_from_inventory(evids["Meth Sample"])
-        jump expression step_SPE
-    else:
-        "Wrong compound!"
-        jump expression inv_call_SPE
+    def use_prepared_meth():
+        if location != "gcms":
+            renpy.notify("Bring this to the GC-MS to analyze it.")
+            return
+        renpy.notify("GC-MS analysis coming soon.")
