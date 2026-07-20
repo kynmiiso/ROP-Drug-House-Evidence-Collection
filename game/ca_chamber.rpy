@@ -36,7 +36,7 @@ init python:
         renpy.restart_interaction()
 
 label ca_chamber:
-    hide screen materials_lab_screen
+    $ hide_all_lab_screens()
     $ hide_all_inventory()
     $ location = "ca_chamber"
     scene materials_lab

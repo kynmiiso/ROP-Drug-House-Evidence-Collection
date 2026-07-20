@@ -1,5 +1,5 @@
 label gcms:
-    hide screen materials_lab_screen
+    $ hide_all_lab_screens()
     $ hide_all_inventory()
     $ location = "gcms"
     scene materials_lab

@@ -269,28 +269,28 @@ screen materials_lab_screen:
     image "materials_lab"
 
     hbox:
-        xpos 0.26 yalign 0.5
+        xpos 0.26 yalign 0.1
         imagebutton:
             idle "gcms_idle"
             hover "gcms_hover"
             action [SetVariable("location", "gcms"), Jump("gcms")]
-    text "GC-MS" xpos 0.31 ypos 0.66
+    text "GC-MS" xpos 0.33 ypos 0.43
 
     hbox:
-        xpos 0.52 yalign 0.5
+        xpos 0.52 yalign 0.1
         imagebutton:
             idle "ca_chamber_idle"
             hover "ca_chamber_hover"
             action [SetVariable("location", "ca_chamber"), Jump("ca_chamber")]    
-    text "Cyanoacrylate Chamber" xpos 0.57 ypos 0.67
+    text "Cyanoacrylate Chamber" xpos 0.52 ypos 0.43
 
     hbox:
-        xpos 0.80 yalign 0.5
+        xpos 0.26 yalign 0.7
         imagebutton:
             idle "solid_phase_extraction_idle"
             hover "solid_phase_extraction_hover"
             action [SetVariable("location", "solid_phase_extraction"), Jump("solid_phase_extraction")]
-    text "Solid Phase Extraction" xpos 0.87 ypos 0.67
+    text "Solid Phase Extraction" xpos 0.29 ypos 0.8
 
 screen ca_chamber_screen():
     $ bg_image = (

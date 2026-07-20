@@ -69,7 +69,7 @@ label lab:
 # 3. load it with the sample, 4. wash the cartridge, 5. elution (obtain the extracted compound)
 label solid_phase_extraction:
     #PRE-TREATMENT
-    hide screen materials_lab_screen
+    $ hide_all_lab_screens()
     $ location = "solid_phase_extraction"
     scene lab_counter_bk
     show beaker_empty:
@@ -82,17 +82,17 @@ label solid_phase_extraction:
     menu:
         "Cocaine Sample" if not has_SPE_cocaine:
             $ current_SPE_drug = "cocaine"
-            show beaker_drug:
+            show beaker_cocaine:
                 xalign 0.5
                 yalign 0.5
         "MDMA Sample" if not has_SPE_mdma:
             $ current_SPE_drug = "mdma"
-            show beaker_drug:
+            show beaker_mdma:
                 xalign 0.5
                 yalign 0.5
         "Methamphetamine Sample" if not has_SPE_meth:
             $ current_SPE_drug = "meth"
-            show beaker_drug:
+            show beaker_meth:
                 xalign 0.5
                 yalign 0.5
     jump SPE_dilute_question

@@ -34,6 +34,12 @@ init python:
         renpy.hide_screen("toolboxPopItemMenu")
         renpy.hide_screen("inspectItem")
 
+    def hide_all_lab_screens():
+        for scr in ["ca_chamber_screen", "materials_lab_screen", "spe_spo",
+                    "data_analysis_lab_screen", "afis_screen"]:
+            if renpy.get_screen(scr):
+                renpy.hide_screen(scr)
+
     def inventory_actions(item: str) -> None:
         global imported_print, selected_tool
 
@@ -603,6 +609,7 @@ label afis:
 label materials_lab:
     $ location = ""
     $ hide_all_inventory()
+    $ hide_all_lab_screens()
     python:
         if analyzed_everything():
             renpy.hide_screen("full_inventory")
