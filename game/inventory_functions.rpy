@@ -282,22 +282,27 @@ init -5 python:
         renpy.restart_interaction()
 
     def use_prepared_cocaine():
-        if location != "gcms":
-            renpy.notify("Bring this to the GC-MS to analyze it.")
-            return
-        renpy.notify("GC-MS analysis coming soon.")
+        gcms_use_prepared_sample("cocaine")
 
     def use_prepared_mdma():
-        if location != "gcms":
-            renpy.notify("Bring this to the GC-MS to analyze it.")
-            return
-        renpy.notify("GC-MS analysis coming soon.")
+        gcms_use_prepared_sample("mdma")
 
     def use_prepared_meth():
+        gcms_use_prepared_sample("meth")
+
+    def gcms_use_prepared_sample(drug):
         if location != "gcms":
             renpy.notify("Bring this to the GC-MS to analyze it.")
             return
-        renpy.notify("GC-MS analysis coming soon.")
+        if gcms_step != 3:
+            renpy.notify("The GC-MS isn't ready for a sample right now.")
+            return
+        if drug != gcms_current_drug:
+            renpy.notify("That's not the sample queued for analysis.")
+            return
+        store.gcms_step = 4
+        renpy.notify("Sample loaded into the GC autosampler.")
+        renpy.restart_interaction()
     
     def view_lab_notebook():
         renpy.show_screen("lab_notebook")

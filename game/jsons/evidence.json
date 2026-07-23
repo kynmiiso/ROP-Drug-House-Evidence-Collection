@@ -57,5 +57,23 @@
         "image_name": "inventory-firearm_fingerprint",
         "usable": true,
         "action": "import_firearm_fingerprint"
+    },
+    {
+        "key": "identified-cocaine",
+        "name": "Identified Cocaine Sample",
+        "image_name": "inventory-cocaine",
+        "usable": false
+    },
+    {
+        "key": "identified-mdma",
+        "name": "Identified MDMA Sample",
+        "image_name": "inventory-mdma",
+        "usable": false
+    },
+    {
+        "key": "identified-meth",
+        "name": "Identified Meth Sample",
+        "image_name": "inventory-meth",
+        "usable": false
     }
 ]

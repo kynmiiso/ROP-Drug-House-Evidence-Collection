@@ -36,7 +36,9 @@ init python:
 
     def hide_all_lab_screens():
         for scr in ["ca_chamber_screen", "materials_lab_screen", "spe_spo",
-                    "data_analysis_lab_screen", "afis_screen", "analytical_balance_screen"]:
+                    "data_analysis_lab_screen", "afis_screen", "analytical_balance_screen", 
+                    "ca_chamber_checklist", "ca_chamber_amount_check", "gcms_checklist", 
+                    "gcms_loading", "gcms_screen", "gcms_compare_screen"]:
             if renpy.get_screen(scr):
                 renpy.hide_screen(scr)
 
@@ -566,9 +568,6 @@ label lab_hallway_intro:
     n "You will also have to conduct a GC-MS test to identify the chemical compounds of the presumed drugs collected on the field."
     show nina normal3
     n "You can go wherever you want - but I suggest beginning with the Cyanoacrylate Chamber first so we won't have to waste time waiting for it to heat up."
-
-    $config.rollback_enabled = False # disables rollback
-    $quick_menu = False # removes quick menu (at bottom of screen)
 
     show screen inventory
 

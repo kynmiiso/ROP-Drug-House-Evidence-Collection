@@ -293,7 +293,7 @@ screen materials_lab_screen:
     text "Solid Phase Extraction" xpos 0.29 ypos 0.8
 
     hbox:
-        xpos 0.52 yalign 0.7
+        xpos 0.53 yalign 0.7
         imagebutton:
             idle "analytical_balance_idle"
             hover "analytical_balance_hover"
@@ -350,7 +350,7 @@ screen ca_chamber_screen():
                 hover_background "#0466c8"
                 action Jump("ca_chamber_load_dialogue")
 
-screen ca_chamber_checklist:
+screen ca_chamber_checklist():
     add "images/materials_lab/ca_chamber/ca_fuming_checklist/ca_fuming_checklist_%d.png" % ca_chamber_step:
         xalign 0.999999
         yalign 0.3
@@ -378,7 +378,7 @@ screen ca_chamber_amount_check():
                 textbutton "5 drops"  action Function(check_ca_amount, "glue", 5)
                 textbutton "10 drops" action Function(check_ca_amount, "glue", 10)
 
-screen spe_spo: # the solid phase extraction checklist
+screen spe_spo(): # the solid phase extraction checklist
     if(step_num_SPE == 1 and spe_difficulty == 0):
         add "images/materials_lab/spe/spe_checklist/spe_checklist_full1.png":
             xalign 0.999999
@@ -453,7 +453,7 @@ screen lab_notebook():
 
             text "Sample Weights:" size 30 color "#474646"
             for drug, weight in drug_weights.items():
-                text (f"  {drug.capitalize()}: {weight} g" if weight is not None else f"  {drug.capitalize()}: Not yet weighed") size 26 color "#474646"
+                text (f"Presumed  {drug.capitalize()}: {weight} g" if weight is not None else f" Presumed {drug.capitalize()}: Not yet weighed") size 26 color "#474646"
 
         textbutton "✕":
             xalign 0.95 yalign 0.05
@@ -461,10 +461,10 @@ screen lab_notebook():
 
 screen analytical_balance_screen():
     $ balance_image = {
-        "zero":    "analytical_balance_zero",
-        "cocaine": "analytical_balance_cocaine",
-        "mdma":    "analytical_balance_mdma",
-        "meth":    "analytical_balance_meth",
+        "zero":     "analytical_balance_zero",
+        "cocaine":  "analytical_balance_cocaine",
+        "mdma":     "analytical_balance_mdma",
+        "meth":     "analytical_balance_meth",
     }[balance_state]
     add balance_image at Transform(xalign=0.5, yalign=0.5)
 
@@ -495,3 +495,77 @@ screen analytical_balance_screen():
             background "#012a4a"
             hover_background "#0466c8"
             action [SetVariable("balance_state", "zero"), Function(renpy.restart_interaction)]
+            
+screen gcms_checklist():
+    add "images/materials_lab/gcms/gcms_checklist/gcms_checklist_%d.png" % gcms_step:
+        xalign 0.999999
+        yalign 0.3
+
+screen gcms_screen():
+    $ bg = "gc_autosampler_background" if gcms_step in (3, 4) else "gcms_background"
+    add bg at Transform(xalign=0.5, yalign=0.5)
+
+    if gcms_step == 3:
+        draggroup:
+            if selected_tool is not None:
+                drag:
+                    drag_name selected_tool
+                    draggable True
+                    droppable False
+                    dragging item_dragging_package
+                    dragged  gcms_autosampler_drop
+                    xpos 0.65 ypos 0.60
+                    child Transform(selected_tool, zoom=1.5)
+            drag:
+                drag_name "gcms_autosampler_dropzone"
+                draggable False
+                droppable True
+                xalign 0.5 yalign 0.5
+                child Transform(Solid("#00000000"), size=(300, 300))
+
+    elif gcms_step == 4:
+        textbutton "Start Run":
+            xalign 0.5 ypos 0.85
+            xsize 400 ysize 90
+            text_size 42
+            text_color "#ffffff"
+            text_align 0.5
+            background "#012a4a"
+            hover_background "#0466c8"
+            action Jump("gcms_set_time")
+
+    elif gcms_step == 8:
+        textbutton "Open Comparison Interface":
+            xalign 0.5 ypos 0.85
+            xsize 480 ysize 90
+            text_size 42
+            text_color "#ffffff"
+            text_align 0.5
+            background "#012a4a"
+            hover_background "#0466c8"
+            action Jump("gcms_compare_interface")
+
+screen gcms_compare_screen():
+    $ ref_charts = ["cocaine_gcms_charts", "mdma_gcms_charts", "meth_gcms_charts"]
+    $ ref_names  = ["Cocaine", "MDMA", "Methamphetamine"]
+    $ evidence_chart = "evidence_sample_%s_gcms_charts" % gcms_current_drug
+
+    add "gcms_interface"
+    add evidence_chart at Transform(xpos=0.17, ypos=0.25, zoom=0.83)
+    add ref_charts[gcms_ref_index] at Transform(xpos=0.5, ypos=0.25, zoom=0.83)
+    text ref_names[gcms_ref_index] xalign 0.65 ypos 0.63 size 34 color "#ffffff"
+
+    imagebutton:
+        auto "afis_button_%s" at Transform(xpos=0.35, ypos=0.76)
+        action Jump("gcms_compare_prev")
+    text "Prev" xpos 0.385 ypos 0.785 size 40
+
+    imagebutton:
+        auto "afis_button_%s" at Transform(xpos=0.52, ypos=0.76)
+        action Jump("gcms_compare_next")
+    text "Next" xpos 0.559 ypos 0.785 size 40
+
+    imagebutton:
+        auto "afis_button_%s" at Transform(xpos=0.69, ypos=0.76)
+        action Jump("gcms_identify")
+    text "Identify" xpos 0.7 ypos 0.785 size 40
