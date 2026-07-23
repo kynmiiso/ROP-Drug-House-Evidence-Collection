@@ -70,5 +70,11 @@
         "image_name": "5_amm",
         "usable": true,
         "action": "use_5amm"
+    },
+    {
+        "name": "Lab Notebook",
+        "image_name": "toolbox-notebook",
+        "usable": true,
+        "action": "view_lab_notebook"
     }
 ]

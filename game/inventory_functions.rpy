@@ -250,13 +250,31 @@ init -5 python:
         renpy.jump("use5Amm")
 
     def use_cocaine_sample():
-        renpy.jump("useCocaine")
+        if location == "analytical_balance":
+            store.selected_tool = "inventory-cocaine"
+            renpy.restart_interaction()
+        elif location == "solid_phase_extraction":
+            renpy.jump("useCocaine")
+        else:
+            renpy.notify("Bring this to the analytical balance or SPE station to use it.")
 
     def use_mdma_sample():
-        renpy.jump("useMDMA")
+        if location == "analytical_balance":
+            store.selected_tool = "inventory-mdma"
+            renpy.restart_interaction()
+        elif location == "solid_phase_extraction":
+            renpy.jump("useMDMA")
+        else:
+            renpy.notify("Bring this to the analytical balance or SPE station to use it.")
 
     def use_meth_sample():
-        renpy.jump("useMeth")
+        if location == "analytical_balance":
+            store.selected_tool = "inventory-meth"
+            renpy.restart_interaction()
+        elif location == "solid_phase_extraction":
+            renpy.jump("useMeth")
+        else:
+            renpy.notify("Bring this to the analytical balance or SPE station to use it.")
 
     def use_prepared_cocaine():
         if location != "gcms":
@@ -275,3 +293,6 @@ init -5 python:
             renpy.notify("Bring this to the GC-MS to analyze it.")
             return
         renpy.notify("GC-MS analysis coming soon.")
+    
+    def view_lab_notebook():
+        renpy.show_screen("lab_notebook")

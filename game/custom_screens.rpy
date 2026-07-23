@@ -292,6 +292,14 @@ screen materials_lab_screen:
             action [SetVariable("location", "solid_phase_extraction"), Jump("solid_phase_extraction")]
     text "Solid Phase Extraction" xpos 0.29 ypos 0.8
 
+    hbox:
+        xpos 0.52 yalign 0.7
+        imagebutton:
+            idle "analytical_balance_idle"
+            hover "analytical_balance_hover"
+            action [SetVariable("location", "analytical_balance"), Jump("analytical_balance")]
+    text "Analytical Balance" xpos 0.29 ypos 0.8
+
 screen ca_chamber_screen():
     $ bg_image = (
         "ca_chamber_closed" if (ca_chamber_done or ca_chamber_state in ("closed", "loaded"))
@@ -428,3 +436,62 @@ screen spe_spo: # the solid phase extraction checklist
     elif(step_num_SPE == 7 and spe_difficulty == 1):
         add "images/materials_lab/spe/spe_checklist/spe_checklist_half7.png":
             xalign 0.999999
+
+screen lab_notebook():
+    modal True
+    add Solid("#000c")
+    frame:
+        align (0.5, 0.5)
+        xsize 700
+        ysize 500
+        background "#f1eff4"
+        padding (30, 30)
+
+        vbox:
+            spacing 15
+            text "{b}Lab Notebook{/b}" size 40 color "#012a4a"
+
+            text "Sample Weights:" size 30 color "#474646"
+            for drug, weight in drug_weights.items():
+                text (f"  {drug.capitalize()}: {weight} g" if weight is not None else f"  {drug.capitalize()}: not yet weighed") size 26
+
+        textbutton "✕":
+            xalign 0.95 yalign 0.05
+            action Hide("lab_notebook")
+
+screen analytical_balance_screen():
+    $ bg_image = {
+        "zero":    "analytical_balance_zero",
+        "cocaine": "analytical_balance_cocaine",
+        "mdma":    "analytical_balance_mdma",
+        "meth":    "analytical_balance_meth",
+    }[balance_state]
+    add bg_image at Transform(xalign=0.5, yalign=0.5)
+
+    if balance_state == "zero":
+        draggroup:
+            if selected_tool is not None:
+                drag:
+                    drag_name selected_tool
+                    draggable True
+                    droppable False
+                    dragging item_dragging_package
+                    dragged  analytical_balance_drop
+                    xpos 0.75 ypos 0.35
+                    child Transform(selected_tool, zoom=1.5)
+            drag:
+                drag_name "analytical_balance_dropzone"
+                draggable False
+                droppable True
+                xalign 0.5 yalign 0.5
+                child Transform(Solid("#00000000"), size=(300, 300))
+    else:
+        textbutton "Remove Sample":
+            xalign 0.5 ypos 0.85
+            xsize 400 ysize 90
+            text_size 42
+            text_color "#ffffff"
+            text_align 0.5
+            background "#012a4a"
+            hover_background "#0466c8"
+            action [SetVariable("balance_state", "zero"), Function(renpy.restart_interaction)]
