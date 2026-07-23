@@ -248,33 +248,38 @@ init -5 python:
 
     def use_5amm():
         renpy.jump("use5Amm")
-
+        
     def use_cocaine_sample():
         if location == "analytical_balance":
-            store.selected_tool = "inventory-cocaine"
-            renpy.restart_interaction()
+            analytical_balance_use_sample("cocaine")
         elif location == "solid_phase_extraction":
             renpy.jump("useCocaine")
         else:
-            renpy.notify("Bring this to the analytical balance or SPE station to use it.")
+            renpy.notify("Bring this to the balance or SPE to use it.")
 
     def use_mdma_sample():
         if location == "analytical_balance":
-            store.selected_tool = "inventory-mdma"
-            renpy.restart_interaction()
+            analytical_balance_use_sample("mdma")
         elif location == "solid_phase_extraction":
             renpy.jump("useMDMA")
         else:
-            renpy.notify("Bring this to the analytical balance or SPE station to use it.")
+            renpy.notify("Bring this to the balance or SPE to use it.")
 
     def use_meth_sample():
         if location == "analytical_balance":
-            store.selected_tool = "inventory-meth"
-            renpy.restart_interaction()
+            analytical_balance_use_sample("meth")
         elif location == "solid_phase_extraction":
             renpy.jump("useMeth")
         else:
-            renpy.notify("Bring this to the analytical balance or SPE station to use it.")
+            renpy.notify("Bring this to the balance or SPE to use it.")
+
+    def analytical_balance_use_sample(drug):
+        if store.balance_state != "zero":
+            renpy.notify("Remove the current sample before weighing another.")
+            return
+        store.balance_state = drug
+        weigh_sample(drug)
+        renpy.restart_interaction()
 
     def use_prepared_cocaine():
         if location != "gcms":

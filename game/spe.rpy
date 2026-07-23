@@ -68,6 +68,11 @@ label lab:
 # there are 5 steps for drugs too, 1. dilute the mixture, 2. condition the cartridge, 
 # 3. load it with the sample, 4. wash the cartridge, 5. elution (obtain the extracted compound)
 label solid_phase_extraction:
+    if not analytical_balance_done:
+        show nina normal1
+        n "You'll need to weigh all three presumed samples on the analytical balance before you can begin extraction."
+        hide nina normal1
+        jump materials_lab
     #PRE-TREATMENT
     $ hide_all_lab_screens()
     $ location = "solid_phase_extraction"

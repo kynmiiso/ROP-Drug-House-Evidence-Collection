@@ -36,7 +36,7 @@ init python:
 
     def hide_all_lab_screens():
         for scr in ["ca_chamber_screen", "materials_lab_screen", "spe_spo",
-                    "data_analysis_lab_screen", "afis_screen"]:
+                    "data_analysis_lab_screen", "afis_screen", "analytical_balance_screen"]:
             if renpy.get_screen(scr):
                 renpy.hide_screen(scr)
 

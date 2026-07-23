@@ -1,11 +1,12 @@
 default weighed_cocaine = False
 default weighed_mdma    = False
 default weighed_meth    = False
-default drug_weights = {"cocaine": None, "mdma": None, "meth": None}
-default balance_state = "zero"   # zero / cocaine / mdma / meth
+default drug_weights = {"cocaine": None, "mdma": None, "methamphetamine": None}
+default balance_state = "zero"   # zero / cocaine / mdma / methamphetamine
+default analytical_balance_done = False
 
 init python:
-    _CORRECT_WEIGHTS = {"cocaine": 2.6703, "mdma": 1.8415, "meth": 3.1296}
+    _CORRECT_WEIGHTS = {"cocaine": 2.6703, "mdma": 1.8415, "methamphetamine": 3.1296}
 
     def weigh_sample(drug):
         global weighed_cocaine, weighed_mdma, weighed_meth
@@ -16,7 +17,11 @@ init python:
             weighed_mdma = True
         elif drug == "meth":
             weighed_meth = True
-        renpy.notify(f"Recorded weight: {_CORRECT_WEIGHTS[drug]} g")
+        renpy.notify(f"Recorded weight for presumed {drug} sample in lab notebook: {_CORRECT_WEIGHTS[drug]} g")
+
+        if weighed_cocaine and weighed_mdma and weighed_meth:
+            analytical_balance_done = True 
+            renpy.notify("All samples weighed and logged. Solid Phase Extraction is now available.")
 
     def analytical_balance_drop(drags, drop):
         if not drop:
@@ -49,7 +54,17 @@ label analytical_balance:
     $ hide_all_lab_screens()
     $ hide_all_inventory()
     $ location = "analytical_balance"
-    scene materials_lab
+    scene lab_counter_bk
+    $ toolbox.add_to_inventory(tools["Lab Notebook"])
+    show nina normal1
+    n "In the analytical balance section you can weigh presumed drug samples"
+    n "Don't forget to record all of the weights in your lab notebook!"
+    hide nina normal1
     show screen analytical_balance_screen
     show screen inventory
     show screen back_button_screen('materials_lab') onlayer over_screens
+    jump analytical_balance_idle
+
+label analytical_balance_idle:
+    $ renpy.pause(3600, hard=True)
+    jump analytical_balance_idle

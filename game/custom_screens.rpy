@@ -298,7 +298,7 @@ screen materials_lab_screen:
             idle "analytical_balance_idle"
             hover "analytical_balance_hover"
             action [SetVariable("location", "analytical_balance"), Jump("analytical_balance")]
-    text "Analytical Balance" xpos 0.29 ypos 0.8
+    text "Analytical Balance" xpos 0.52 ypos 0.8
 
 screen ca_chamber_screen():
     $ bg_image = (
@@ -453,20 +453,20 @@ screen lab_notebook():
 
             text "Sample Weights:" size 30 color "#474646"
             for drug, weight in drug_weights.items():
-                text (f"  {drug.capitalize()}: {weight} g" if weight is not None else f"  {drug.capitalize()}: not yet weighed") size 26
+                text (f"  {drug.capitalize()}: {weight} g" if weight is not None else f"  {drug.capitalize()}: Not yet weighed") size 26 color "#474646"
 
         textbutton "✕":
             xalign 0.95 yalign 0.05
             action Hide("lab_notebook")
 
 screen analytical_balance_screen():
-    $ bg_image = {
+    $ balance_image = {
         "zero":    "analytical_balance_zero",
         "cocaine": "analytical_balance_cocaine",
         "mdma":    "analytical_balance_mdma",
         "meth":    "analytical_balance_meth",
     }[balance_state]
-    add bg_image at Transform(xalign=0.5, yalign=0.5)
+    add balance_image at Transform(xalign=0.5, yalign=0.5)
 
     if balance_state == "zero":
         draggroup:
