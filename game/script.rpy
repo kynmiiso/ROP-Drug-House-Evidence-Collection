@@ -559,23 +559,17 @@ label lab_hallway_intro:
     show nina normal1
     n "Officer, good to see you again."
     show nina normal3
-    n "Great job processing the scene! I knew I could count on you!"
+    n "Great job processing the scene! I knew I could count on you."
     n "Welcome to the lab! Here, you can analyze all the evidence you collected from the crime scene."
     show nina thinknote1
     n "I need you to perform a fingerprint analysis on potential prints on the firearm."
     n "For the firearm, you'll have to use the Cyanoacrylate Chamber to bind the fingerprint onto the gun."
-    n "Then, you will have to use AFIS to compare your fingerprint to the existing dataset of fingerprints to figure out the suspect's identity."
-    n "You will also have to conduct a GC-MS test to identify the chemical compounds of the presumed drugs collected on the field."
+    n "Then, you will have to use CSIpix to compare your fingerprint to the existing dataset of fingerprints."
+    n "You will also have to use the GC-MS to identify the chemical compounds of samples collected on the field."
     show nina normal3
     n "You can go wherever you want - but I suggest beginning with the Cyanoacrylate Chamber first so we won't have to waste time waiting for it to heat up."
 
     show screen inventory
-
-    $ inventory_item_names = ["Cocaine sample vial", "MDMA sample vial", "Methamphetamine sample vial", "Analytical balance photo", "Weighed sample bag", "GC-MS printout",
-    "Firearm photo", "Firearm with developed print", "Superglue capsule", "CA Chamber photo", "Serial number restoration reagent", "Restored serial number photo",
-    "Fingerprint on card", "Fingerprint lift - digital scale", "Fingerprint lift - drug packaging", "Fingerprint lift - cell phone", "Backing card", "Scalebar", "Lifting tape",
-    "AFIS comparison printout", "Distilled water", "Tweezers", "Gloves box", "Evidence bag", "Jar in bag", "Tape in bag"]
-
     jump hallway
 
 label hallway:
